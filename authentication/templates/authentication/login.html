@@ -1,0 +1,25 @@
+{% extends "template.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block body %}
+
+    <main class="login-form">
+
+
+        <form action="{% url 'login' %}" method="post">
+            {% csrf_token %}
+            <div style="margin-top:75px;">
+                <label class="text-input-label" for="username">Email address:</label>
+                <input class="text-input" autofocus autocomplete="off" name="username" type="text" placeholder="Username">
+            </div>
+            <div>
+                <label class="text-input-label" for="password">Password:</label>
+                <input class="text-input" name="password" type="password" placeholder="Password">
+            </div>
+            <div>
+                <input type="submit" class="button-green" value="Log In">
+            </div>
+        </form>
+    </main>
+{% endblock %}

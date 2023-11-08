@@ -1,0 +1,49 @@
+{% load static %}
+
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="{% static 'css.css' %}" rel="stylesheet">
+    <script src="{% static 'base.js' %}"></script>
+    <script>
+        {% if message %}
+            init_message = "{{message}}";
+        {% else %}
+            init_message = "none"
+        {% endif %}
+
+    </script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="top-bar">
+        <nav>
+            {% comment %} LEFT SIDE OF NAV BAR {% endcomment %}
+                <span id="app_name" style="float: left;">Bloktoets</span>
+            
+            {% comment %} RIGHT SIDE OF NAV BAR {% endcomment %}
+                <span style="float: right;" id="user_name">
+                {% if user.is_authenticated %}
+                    {{user.username}}
+                </span>
+                    <div id="user_menu" tabindex="-1">
+                        <a href="/change_password"><li>Change Password</li></a>
+                        <a href="/logout"><li>Logout</li></a>
+                    </div>
+                    <script>logged_in = true</script>
+                {% else %}
+                    <a href="/login">Login</a>
+                </span>
+                {% endif %}
+                
+        </nav>
+    </div>
+
+    <div id="message_container"></div>
+
+    {% block body %}{% endblock %}
+
+</body>
+
+</html>

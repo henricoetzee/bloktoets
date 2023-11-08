@@ -1,0 +1,21 @@
+{% extends "template.html" %}
+{% load static %}
+
+{% block title %}Bloktoets{% endblock %}
+
+{% block head %}
+<script src="{% static 'bloktoets/main.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+<div id="main_view"></div>
+<script>
+    {% if user.is_authenticated %}
+    document.addEventListener("DOMContentLoaded", () => {
+        get_data("stores");
+    });
+    {% else %}
+    window.location.href = "/login"
+    {% endif %}
+</script>
+{% endblock %}

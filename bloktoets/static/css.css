@@ -1,0 +1,230 @@
+/*    COLOURS
+Red: #EC1B24
+Green: #157946
+*/
+
+
+body {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: larger;
+    margin-top: 35px;
+}
+
+#main_view {
+    margin: auto;
+    margin-top: 50px;
+}
+
+/* NAV BAR */
+.top-bar {
+    z-index: 10;
+    color: white;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    background-color: #157946;
+    height: 35px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+.top-bar nav span {
+    display: inline-block;
+    text-align: center;
+    padding: 5px;
+}
+.top-bar nav a {
+    color: white;
+    text-decoration: none;
+}
+.breadcrumb {
+    margin: -5px;
+    cursor: pointer;
+}
+.breadcrumb:hover {
+    background-color: #006431;
+}
+#user_name {
+    cursor: pointer;
+}
+#user_name:hover {
+    background-color: #006431;
+}
+#user_menu {
+    z-index: 9;
+    display: none;
+    position: fixed;
+    top: 33px;
+    right: 0px;
+    color: white;
+    background-color: #157946;
+}
+#user_menu li {
+    list-style-type: none;
+    padding: 5px;
+}
+#user_menu li:hover {
+    background-color: #006431;
+}
+#user_menu:focus {
+    outline: none;
+}
+
+
+/* MESSAGE */
+
+#message_container {
+    z-index: 999;
+    width: fit-content;
+    position: fixed;
+    top: 5px;
+    left: 0px;
+    right: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: all 0.5s ease-in-out;
+    transition: height 0.5s ease-in-out;
+}
+
+.message {
+    cursor: pointer;
+    z-index: 999;
+    display: block;
+    margin-bottom: 5px;
+    opacity: 0;
+    width: fit-content;
+    /*height: 43px;*/
+    text-align: center;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #2980b9;
+    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.5);
+    transition: all 0.5s ease-in-out;
+}
+
+/* POPUP WINDOW */
+.popup-container {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0);
+
+}
+.popup-container div {
+    background-color: white;
+    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    width: fit-content;
+    margin: auto;
+    margin-top: 25%;
+    padding: 15px;
+}
+
+
+/* Used by login page */
+.login-form {
+    width: 400px;
+    margin: auto;
+}
+
+
+
+
+/* TEXT INPUTS */
+
+
+/* Removes yellow background on text inputs */
+input:autofill {
+    background: #fff;
+}
+
+.text-input-label {
+    font-size: smaller;
+    margin: 5px;
+}
+
+.text-input {
+    width: 350px;
+    font-size: medium;
+    border: 1px;
+    border-color: #157946;
+    border-radius: 8px;
+    padding: 6px;
+    margin: 5px;
+    border-style: solid;
+}
+.text-input:focus {
+    outline: none;
+    box-shadow: 0px 0px 5px #157946;
+}
+
+
+/* BUTTONS */
+
+.button-green {
+    width: 350px;
+    font-size: 20px;
+    background-color: #157946;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
+    margin: 5px;
+}
+
+
+
+
+/*  BLOCKTOETS TABLE */
+.bt-table {
+    margin: auto;
+    border-collapse: collapse;
+    /* font-size: 0.9em;
+    font-family: sans-serif; */
+    min-width: 400px;
+    /* box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); */
+}
+.bt-table thead tr {
+    /* background-color: #157946; */
+    color: #000000;
+    text-align: left;
+    border-bottom: solid 3px #157946;
+}
+.bt-table th,
+.bt-table td {
+    padding: 12px 15px;
+}
+.bt-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+/* .bt-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+} */
+
+.bt-table tbody tr:last-of-type {
+    border-bottom: 2px solid #157946;
+}
+.bt-table tbody tr:hover {
+    cursor: pointer;
+    background-color: rgb(245, 245, 245);
+    color: #006431;
+}
+
+
+
+/*  BUTTONS */
+.close-button {
+    display: block;
+    background-color: #EC1B24;
+    border: none;
+    margin: auto;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: inherit;
+}
+
