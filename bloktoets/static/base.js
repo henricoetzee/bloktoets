@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
         user_menu.addEventListener("focusout", () => {
             setTimeout (() => {
                 user_menu.style.display = "none";
-            }, 100)
+            }, 500)
         })
         user_name.addEventListener("click", () => {
             usermenu_toggle();
