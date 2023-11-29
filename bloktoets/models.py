@@ -23,6 +23,8 @@ class RecipeBook(models.Model):
 
 class Products(models.Model):
     name = models.CharField(max_length=64, blank=False)
+    store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True)
+    recipe_book = models.ForeignKey(RecipeBook, on_delete=models.PROTECT, null=True)
     scale_code = models.CharField(max_length=32)
     packing_qty = models.FloatField()
     cost = models.FloatField()
@@ -40,6 +42,8 @@ class Products(models.Model):
 
 class Packaging(models.Model):
     name = models.CharField(max_length=64, blank=False)
+    store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True)
+    recipe_book = models.ForeignKey(RecipeBook, on_delete=models.PROTECT, null=True)
     scale_code = models.CharField(max_length=32)
     packing_qty = models.FloatField()
     cost = models.FloatField()
@@ -62,9 +66,25 @@ class Recipe(models.Model):
     cost_per_unit = models.FloatField()
     gross_profit = models.FloatField()
     selling_price = models.FloatField()
-    ingredients = models.ManyToManyField(Products, related_name="used_in")
-    packaging = models.ManyToManyField(Packaging, related_name="used_in")
-    recipe_ingredients = models.ManyToManyField('self', symmetrical=False, related_name="used_in")
+    ingredients = models.ManyToManyField(
+        Products,
+        blank=True,
+        through="Product_relation",
+        through_fields=("recipe", "ingredient")
+    )
+    packaging = models.ManyToManyField(
+        Packaging,
+        blank=True,
+        through="Packaging_relation",
+        through_fields=("recipe", "ingredient")
+    )
+    recipe_ingredients = models.ManyToManyField(
+        'self',
+        symmetrical=False,
+        blank=True,
+        through="Recipe_relation",
+        through_fields=("recipe", "ingredient")
+    )
 
     def serialize(self):
         return {
@@ -73,8 +93,29 @@ class Recipe(models.Model):
             "scale_code": self.scale_code,
             "cost_per_unit": self.cost_per_unit,
             "gross_profit": self.gross_profit,
-            "selling_price": self.selling_price,
+            "unit_price": self.selling_price,
         }
 
+class Recipe_relation(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="used_recipes")
+    ingredient = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="used_in")
+    amount = models.FloatField()
 
+    def serialize(self):
+        return [self.ingredient.id, self.amount]
 
+class Product_relation(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="used_products")
+    ingredient = models.ForeignKey(Products, on_delete=models.CASCADE, related_name="used_in")
+    amount = models.FloatField()
+
+    def serialize(self):
+        return [self.ingredient.id, self.amount]
+
+class Packaging_relation(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="used_packaging")
+    ingredient = models.ForeignKey(Packaging, on_delete=models.CASCADE, related_name="used_in")
+    amount = models.FloatField()
+
+    def serialize(self):
+        return [self.ingredient.id, self.amount]

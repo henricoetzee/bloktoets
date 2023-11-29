@@ -1,0 +1,579 @@
+// Add_Window contents
+// Create elements for add window
+
+
+function create_add_window_contents(t, add_window_container, existing_item=false, response) {
+    let content = document.createElement("div");
+    content.className = "add-window";
+
+    // Name input - common in all three models
+    let input_name_label = document.createElement("label");
+    input_name_label.className = "text-input-label";
+    input_name_label.htmlFor = "new_name";
+    input_name_label.innerHTML = "Name";
+    content.appendChild(input_name_label);
+    let input_name = document.createElement("input");
+    input_name.id = "new_name";
+    input_name.type = "text";
+    input_name.className = "text-input";
+    content.appendChild(input_name);
+
+    // Scale code input - common in all three models
+    let input_scale_label = document.createElement("label");
+    input_scale_label.className = "text-input-label";
+    input_scale_label.htmlFor = "new_scale";
+    input_scale_label.innerHTML = "Scale code";
+    content.appendChild(input_scale_label);
+    let input_scale = document.createElement("input");
+    input_scale.id = "new_scale";
+    input_scale.type = "text";
+    input_scale.className = "text-input";
+    content.appendChild(input_scale);
+
+    // Split into two branches, one for recipes, and the other for
+    // products and packaging
+    if (t == "recipe") {
+        // Create new recipe object
+        r = new Recipe;
+        let todo = "create";
+
+        if (existing_item) {
+            todo = "modify";
+            r.id = response.id;
+            r.name = response.name;
+            r.scale_code = response.scale_code;
+            r.recipe_ingredients = response.recipe_ingredients;
+            r.ingredients = response.product_ingredients;
+            r.packaging = response.packaging_ingredients;
+            r.cost = response.cost_per_unit;
+            r.selling = response.selling_price;
+            input_name.value = r.name;
+            input_scale.value = r.scale_code;
+        }
+
+        // Make window bigger and center display
+        content.style.width = "875px";
+        content.style.textAlign = "center";
+
+        // -------Add the +Recipe +Product +Packaging buttons
+        let button_holder = document.createElement("div");
+        // Recipe ingredients button
+        let input_recipe_ingredient = document.createElement("button");
+        input_recipe_ingredient.className = "button-green";
+        input_recipe_ingredient.style.width = "fit-content";
+        input_recipe_ingredient.innerHTML = "+ recipe";
+        input_recipe_ingredient.onclick = function() {content.appendChild(render_add_contents_window(recipes, "recipes", r))};
+        button_holder.appendChild(input_recipe_ingredient);
+        // Product ingredient button
+        let input_product_ingredient = document.createElement("button");
+        input_product_ingredient.className = "button-green";
+        input_product_ingredient.style.width = "fit-content";
+        input_product_ingredient.innerHTML = "+ product";
+        input_product_ingredient.onclick = function() {content.appendChild(render_add_contents_window(products, "products", r))};
+        button_holder.appendChild(input_product_ingredient);
+        // Packaging ingredient button
+        let input_packaging_ingredient = document.createElement("button");
+        input_packaging_ingredient.className = "button-green";
+        input_packaging_ingredient.style.width = "fit-content";
+        input_packaging_ingredient.innerHTML = "+ packaging";
+        input_packaging_ingredient.onclick = function() {content.appendChild(render_add_contents_window(packaging, "packaging", r))};
+        button_holder.appendChild(input_packaging_ingredient);
+        // Add button holder
+        content.appendChild(button_holder);
+
+        // Render tables for all ingredients + Total price and selling price
+        let ingredients_table_holder = document.createElement("div");
+        ingredients_table_holder.id = "ingredients_table_holder";
+        render_ingredients_table(ingredients_table_holder, r);
+
+        content.appendChild(ingredients_table_holder);
+
+        // Save button
+        let save_button = document.createElement("button");
+        save_button.className = "button-green";
+        save_button.innerHTML = "Save";
+        save_button.onclick = function() {
+            add_window_container.remove();
+            data = JSON.stringify({
+                "what": "recipe",
+                "todo": todo,
+                "id": r.id,
+                "recipe_book": current_recipebook,
+                "scale_code": input_scale.value,
+                "name": input_name.value,
+                "cost_per_unit": parseFloat(r.cost),
+                "selling_price": parseFloat(r.selling),
+                "recipe_ingredients": r.recipe_ingredients,
+                "ingredients": r.ingredients,
+                "packaging": r.packaging
+            });
+            send_data(data, "Sending recipe to server...", () => {get_data("recipes", "Getting recipes from server...", current_store, current_recipebook)})
+        }
+
+        content.appendChild(save_button);
+
+    } else {
+        // Packing qty input
+        let input_packing_qty_label = document.createElement("label");
+        input_packing_qty_label.className = "text-input-label";
+        input_packing_qty_label.htmlFor = "new_packing_qty";
+        input_packing_qty_label.innerHTML = "Packing quantity";
+        content.appendChild(input_packing_qty_label);
+        let input_packing_qty = document.createElement("input");
+        input_packing_qty.id = "new_packing_qty";
+        input_packing_qty.type = "number";
+        input_packing_qty.min = 1;
+        input_packing_qty.className = "text-input";
+        content.appendChild(input_packing_qty);
+
+        // Cost
+        let input_cost_label = document.createElement("label");
+        input_cost_label.className = "text-input-label";
+        input_cost_label.htmlFor = "new_cost";
+        input_cost_label.innerHTML = "Cost";
+        content.appendChild(input_cost_label);
+        let input_cost = document.createElement("input");
+        input_cost.id = "new_cost";
+        input_cost.type = "number";
+        input_cost.min = 0;
+        input_cost.step = 0.01;
+        input_cost.className = "text-input";
+        content.appendChild(input_cost);
+
+        // Checkbox to check if item should be visible to whole store
+        let input_checkbox = document.createElement("input")
+        input_checkbox.id = "store_visible";
+        input_checkbox.type = "checkbox";
+        content.appendChild(input_checkbox);
+        let input_checkbox_label = document.createElement("label");
+
+        input_checkbox_label.className = "text-input-label";
+        input_checkbox_label.htmlFor = "store_visible";
+        input_checkbox_label.innerHTML = "Visible for whole store?";
+        content.appendChild(input_checkbox_label);
+
+
+        // TODO? Auto update field for price per quantity???
+    
+        // Populate items if we are rendering an existing item
+        let todo = "create";
+        let id = -1;
+        if (existing_item) {
+            todo = "modify";
+            input_name.value = response.item.name;
+            input_name.readOnly = true;
+            input_scale.value = response.item.scale_code;
+            input_packing_qty.value = response.item.packing_qty;
+            input_cost.value = response.item.cost;
+            id = response.item.id;
+            input_checkbox.checked = response.store_visible;
+            input_checkbox.disabled = true;
+        }
+
+        // Save button
+        let save_button = document.createElement("button");
+        save_button.className = "button green-bg";
+        save_button.innerHTML = "Save";
+        save_button.onclick = function() {
+            add_window_container.remove();
+            data = JSON.stringify({
+                "todo": todo,
+                "what": t,
+                "id": id,
+                "name": input_name.value,
+                "scale_code": input_scale.value,
+                "packing_qty": input_packing_qty.value,
+                "cost": input_cost.value,
+                "store_visible": input_checkbox.checked,
+                "store": current_store,
+                "recipe_book": current_recipebook
+            });
+            if (t == "product") {f = function() {get_data("products", "Getting products...", current_store, current_recipebook)}};
+            if (t == "packaging") {f = function() {get_data("packaging", "Getting packaging...", current_store, current_recipebook)}};
+            send_data(data, "Sending new item to server...", f);
+        }
+        content.appendChild(save_button);
+
+    }
+
+
+    return content;
+}
+
+function render_add_contents_window(contents, content_type, recipe) {
+    add_contents_window_container = document.createElement("div");
+    add_contents_window_container.className = "add-window-container";
+    add_contents_window = document.createElement("div");
+    add_contents_window.className = "add-window";
+    add_contents_window.style.width = "fit-content";
+    add_contents_window_container.appendChild(add_contents_window);
+
+    // Create onclick functions
+    if (content_type == "recipes") {
+        onclickfunction = function(id) {
+            recipe.add_recipe_ingredient(id);
+            add_contents_window_container.remove();
+            render_ingredients_table(document.getElementById("ingredients_table_holder"), recipe);
+        }
+    };
+    if (content_type == "products") {
+        onclickfunction = function(id) {
+            recipe.add_ingredient(id);
+            add_contents_window_container.remove();
+            render_ingredients_table(document.getElementById("ingredients_table_holder"), recipe);
+        }
+    };
+    if (content_type == "packaging") {
+        onclickfunction = function(id) {
+            recipe.add_packaging(id)
+            add_contents_window_container.remove()
+            render_ingredients_table(document.getElementById("ingredients_table_holder"), recipe);
+        }
+    };
+
+    let table = document.createElement("table");
+    table.className = "bt-table";
+    // Create filter input
+    let thead = table.createTHead();
+    let header_row = thead.insertRow();
+    let header_cell = document.createElement("TH");
+    let filterbox = document.createElement("input");
+    filterbox.placeholder = "Filter";
+    filterbox.className = "text-input";
+    header_cell.appendChild(filterbox);
+    header_row.appendChild(header_cell);
+    
+    // Create rows
+    let tbody = table.createTBody();
+    for (row in contents["data"]) {
+        const new_row = tbody.insertRow();
+        let id = contents.data[row]["id"];
+        new_row.onclick = function() {onclickfunction(id)}
+        for (cell in contents.data[row]) {
+            if (cell == "name") {
+                const new_cell = new_row.insertCell();
+                new_cell.innerHTML = contents.data[row][cell];
+            }
+        }
+    }
+    add_contents_window.appendChild(table);
+
+    // Add filter function when filter input change
+    filterbox.oninput = function() {
+        for (row in tbody.childNodes) {
+            if (!tbody.childNodes[row].childNodes[0].innerHTML.toUpperCase().includes(filterbox.value.toUpperCase())) {
+                tbody.childNodes[row].style.display = "none";
+            } else {
+                tbody.childNodes[row].style.display = "block";
+            }          
+        }
+    }
+
+    // Create cancel button
+    let close_button = document.createElement("button");
+    close_button.className = "button red-bg";
+    close_button.innerHTML = "Cancel";
+    close_button.onclick = function() {add_contents_window_container.remove()};
+    add_contents_window.appendChild(close_button);
+
+    return add_contents_window_container;
+}
+
+// Render recipe table.  e = element to render to, select_item = ID of element that should be selected after rendering
+function render_ingredients_table(e, recipe, select_item) {
+    // Clear e.innerHTML
+    e.innerHTML = "";
+
+    // Reset recipe cost, will be calculated during table creation
+    recipe.cost = 0.0;
+
+    // ----------RECIPE INGREDIENTS----------------
+    // Title and table header
+    if (recipe.recipe_ingredients.length > 0) {
+        let recipe_ingredients_header = document.createElement("h3");
+        recipe_ingredients_header.innerHTML = "Recipe Ingrediens:";
+        e.appendChild(recipe_ingredients_header);
+        let recipe_ingredients_table = document.createElement("table")
+        recipe_ingredients_table.className = "bt-table";
+        let recipe_ingredients_table_header = create_headers();
+        recipe_ingredients_table.appendChild(recipe_ingredients_table_header)
+        // Table
+        recipe_ingredients_table_body = create_body(recipe, "recipe_ingredients");
+        recipe_ingredients_table.appendChild(recipe_ingredients_table_body);
+        e.appendChild(recipe_ingredients_table);
+    }
+    // ---------PRODUCT INGREDIENTS----------------
+    if (recipe.ingredients.length > 0) {
+        let product_ingredients_header = document.createElement("h3");
+        product_ingredients_header.innerHTML = "Product Ingrediens:";
+        e.appendChild(product_ingredients_header);
+        let product_ingredients_table = document.createElement("table")
+        product_ingredients_table.className = "bt-table";
+        let product_ingredients_table_header = create_headers();
+        product_ingredients_table.appendChild(product_ingredients_table_header)
+        // Table
+        product_ingredients_table_body = create_body(recipe, "ingredients");
+        product_ingredients_table.appendChild(product_ingredients_table_body);
+        e.appendChild(product_ingredients_table);   
+    }
+    // ---------PACKAGING INGREDIENTS---------------
+    if (recipe.packaging.length > 0) {
+        let packaging_ingredients_header = document.createElement("h3");
+        packaging_ingredients_header.innerHTML = "Packaging Ingrediens:";
+        e.appendChild(packaging_ingredients_header);
+        let packaging_ingredients_table = document.createElement("table")
+        packaging_ingredients_table.className = "bt-table";
+        let packaging_ingredients_table_header = create_headers();
+        packaging_ingredients_table.appendChild(packaging_ingredients_table_header)
+        // Table
+        packaging_ingredients_table_body = create_body(recipe, "packaging");
+        packaging_ingredients_table.appendChild(packaging_ingredients_table_body);
+        e.appendChild(packaging_ingredients_table);
+    }
+
+    // Add cost grand total
+    let grand_total = document.createElement("h3");
+    grand_total.innerHTML = "Total cost: ";
+    grand_total.innerHTML += zar(recipe.cost);
+    e.appendChild(grand_total);
+    // Add selling price input and label
+    let selling_input_label = document.createElement("label");
+    selling_input_label.className = "text-input-label";
+    selling_input_label.htmlFor = "sellling_input";
+    selling_input_label.innerHTML = "Selling price: R";
+    e.appendChild(selling_input_label);
+    let selling_input = document.createElement("input");
+    selling_input.id = "selling_input";
+    selling_input.className = "text-input";
+    selling_input.style.width = "100px";
+    selling_input.value = recipe.selling;
+    e.appendChild(selling_input);
+    // Add GP amount and %
+    let gp_output = document.createElement("h3");
+    create_totals(gp_output, selling_input.value, recipe);
+    e.appendChild(gp_output);
+
+    // Select the item specified in select_item
+    if (select_item) {
+        document.getElementById(select_item).focus();
+    }
+
+    selling_input.onkeyup = function(key) {
+        let keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Enter", "Tab", "Backspace"]
+        if (keys.includes(key.key)) {
+            create_totals(gp_output, selling_input.value, recipe);
+        }
+    }
+
+
+    // ---------------FUNCTIONS--------------------
+    // Function to calculate and render GP totals
+    function create_totals(e, selling, recipe) {
+        e.innerHTML = "";
+        let gp = selling - recipe.cost;
+        let gp_percent = 0;
+        if (selling > 0) {gp_percent = gp / selling * 100};
+        e.innerHTML = "GP = " + zar(gp) + " (" + gp_percent.toFixed(1) + "%)";
+        recipe.selling = selling;
+    }
+
+    // Function to create table headers
+    function create_headers() {
+        let headers = document.createElement("THEAD");
+        let header_row = headers.insertRow();
+        const header_names = ["Item", "Cost", "Qty", "Total", "Delete"];
+        for (h in header_names) {
+            let cell = document.createElement("TH");
+            cell.innerHTML = header_names[h];
+            header_row.appendChild(cell);
+        }
+        return headers;
+    }
+    // Function to create table body
+    function create_body(recipe, what) {
+        let body = document.createElement("TBODY");
+        let data = null;
+        let items = null;
+        if (what == "recipe_ingredients") {
+            data = recipe.recipe_ingredients;
+            items = recipes;
+        };
+        if (what == "ingredients") {
+            data = recipe.ingredients;
+            items = products;
+        };
+        if (what == "packaging") {
+            data = recipe.packaging;
+            items = packaging;
+        };
+        let total = 0.0;
+        for (line in data) {
+            let row = body.insertRow();
+            row.className = "recipe-ingredient-row"
+            // Name
+            let cell = row.insertCell();
+            let line_item = get_item(data[line][0], items)
+            cell.innerHTML = line_item["name"];
+            // Cost
+            cell = row.insertCell();
+            let line_total = line_item["unit_price"]
+            cell.innerHTML = zar(line_total)
+            // Qty input
+            cell = row.insertCell();
+            let qty_input = document.createElement("input");
+            qty_input.type = "number";
+            qty_input.className = "text-input";
+            qty_input.id = what + line_item["id"]
+            qty_input.style.width = "70px";
+            qty_input.style.margin = "0px";
+            qty_input.value = data[line][1];
+
+            qty_input.onkeyup = function(key) {
+                let keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Enter", "Tab", "Backspace"]
+                if (keys.includes(key.key)) {
+                    qty_changed()
+                }
+            }
+
+            // Function to re-render table and alter recipe object after qty of item is changed
+            function qty_changed() {
+                if (what == "recipe_ingredients") {recipe.change_recipe_ingredient(line_item["id"], parseFloat(qty_input.value))};
+                if (what == "ingredients") {recipe.change_ingredient(line_item["id"], parseFloat(qty_input.value))};
+                if (what == "packaging") {recipe.change_packaging(line_item["id"], parseFloat(qty_input.value))};
+                render_ingredients_table(e, recipe, what + line_item["id"]);
+            }
+
+
+            line_total *= data[line][1];
+            cell.appendChild(qty_input);
+            qty_input.onchange = function() {qty_changed();}
+            // Line total
+            cell = row.insertCell();
+            cell.innerHTML = zar(line_total);
+            total += line_total;
+
+            // Delete ingredient button
+            cell = row.insertCell();
+            let delete_button = document.createElement("button");
+            delete_button.className = "button red-bg";
+            delete_button.style.width = "28px";
+            delete_button.innerHTML = "X";
+            delete_button.onclick = function() {
+                if (what == "recipe_ingredients") {recipe.remove_recipe_ingredient(line_item["id"])};
+                if (what == "ingredients") {recipe.remove_ingredient(line_item["id"])};
+                if (what == "packaging") {recipe.remove_packaging(line_item["id"])};  
+                render_ingredients_table(e, recipe);  
+            }
+            cell.appendChild(delete_button);
+        }
+        let row = body.insertRow();
+        // Two blank cells for total row
+        let cell = row.insertCell();
+        cell = row.insertCell();
+        // Total label cell
+        cell = row.insertCell();
+        cell.innerHTML = "Total";
+        // Total amount cell
+        cell = row.insertCell();
+        cell.innerHTML = zar(total);
+        // Add to total recipe cost
+        recipe.cost += total;
+
+        return body;
+
+        // Function that returns the line item that matched the id.
+        function get_item(id, items) {
+            for (let item in items.data) {
+                if (items.data[item]["id"] == id) {
+                    return items.data[item];
+                }
+            }
+        }
+    }
+}
+
+
+class Recipe {
+    constructor() {
+        this.recipe_ingredients = [];
+        this.ingredients = [];
+        this.packaging = [];
+        this.cost = 0.0;
+        this.selling = 0.0;
+        this.id = -1;
+    }
+    add_recipe_ingredient(id) {
+        for (let i in this.recipe_ingredients) {
+            if (id == this.recipe_ingredients[i][0]) {
+                show_message("Cannot add ingredient twice")
+                id = -1;
+                break;
+            }
+        }
+        if (id >= 0) {this.recipe_ingredients.push([id, 1])}
+    }
+    add_ingredient(id) {
+        for (let i in this.ingredients) {
+            if (id == this.ingredients[i][0]) {
+                show_message("Cannot add ingredient twice")
+                id = -1;
+                break;
+            }
+        }
+        if (id >= 0) {this.ingredients.push([id, 1])}
+    }
+    add_packaging(id) {
+        for (let i in this.packaging) {
+            if (id == this.packaging[i][0]) {
+                show_message("Cannot add ingredient twice")
+                id = -1;
+                break;
+            }
+        }
+        if (id >= 0) {this.packaging.push([id, 1])}
+    }
+
+    remove_recipe_ingredient(id) {
+        for (let i = 0; i < this.recipe_ingredients.length; i++) {
+            if (this.recipe_ingredients[i][0] == id) {
+                this.recipe_ingredients.splice(i,1);
+            }
+        }
+    }
+    remove_ingredient(id) {
+        for (let i = 0; i < this.ingredients.length; i++) {
+            if (this.ingredients[i][0] == id) {
+                this.ingredients.splice(i,1);
+            }
+        }
+    }
+    remove_packaging(id) {
+        for (let i = 0; i < this.packaging.length; i++) {
+            if (this.packaging[i][0] == id) {
+                this.packaging.splice(i,1);
+            }
+        }
+    }
+
+    change_recipe_ingredient(id, amount) {
+        for (let i = 0; i < this.recipe_ingredients.length; i++) {
+            if (this.recipe_ingredients[i][0] == id) {
+                this.recipe_ingredients[i][1] = amount;
+            }
+        }
+    }
+    change_ingredient(id, amount) {
+        for (let i = 0; i < this.ingredients.length; i++) {
+            if (this.ingredients[i][0] == id) {
+                this.ingredients[i][1] = amount;
+            }
+        }
+    }
+    change_packaging(id, amount) {
+        for (let i = 0; i < this.packaging.length; i++) {
+            if (this.packaging[i][0] == id) {
+                this.packaging[i][1] = amount;
+            }
+        }
+    }
+}

@@ -1,8 +1,12 @@
 /*    COLOURS
-Red: #EC1B24
-Green: #157946
+Spar Red: #EC1B24
+Spar Green: #157946
+Lime: #BCED09
+Sunglow: #F9CB40
+Byzenite blue: #2F52E0
 */
 
+/* GENERAL THINGS */
 
 body {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
@@ -10,9 +14,20 @@ body {
     margin-top: 35px;
 }
 
+h3 {
+    margin: 5px;
+}
+
 #main_view {
     margin: auto;
     margin-top: 50px;
+}
+
+.green-bg {
+    background-color: #157946;
+}
+.red-bg {
+    background-color: #EC1B24;
 }
 
 /* NAV BAR */
@@ -37,6 +52,7 @@ body {
     text-decoration: none;
 }
 .breadcrumb {
+    padding: 6px !important;
     margin: -5px;
     cursor: pointer;
 }
@@ -86,7 +102,6 @@ body {
 }
 
 .message {
-    cursor: pointer;
     z-index: 999;
     display: block;
     margin-bottom: 5px;
@@ -94,27 +109,41 @@ body {
     width: fit-content;
     /*height: 43px;*/
     text-align: center;
-    color: white;
-    padding: 10px;
+    color: black;
+    /*padding: 10px;*/
+    padding-left: 8px;
     border-radius: 10px;
-    background-color: #2980b9;
+    /*background-color: #2980b9;*/
     box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.5);
     transition: all 0.5s ease-in-out;
+}
+.message-button {
+    cursor: pointer;
+    display: inline-block;
+    margin: 0px;
+    margin-left: 10px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background-color: #EC1B24;
+    width: 29;
+    font-size: large;
 }
 
 /* POPUP WINDOW */
 .popup-container {
+    z-index: 99;
     position: fixed;
     left: 0px;
     top: 0px;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.142);
 
 }
 .popup-container div {
     background-color: white;
-    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
     border-radius: 15px;
     width: fit-content;
     margin: auto;
@@ -161,9 +190,34 @@ input:autofill {
 }
 
 
+
+
+/* COMPONENT SELECTOR */
+.component-selector {
+    background-color: inherit;
+    color: white;
+    border: none;
+    font-size: inherit;
+    margin: -5;
+}
+
 /* BUTTONS */
 
+.button {
+    cursor: pointer;
+    width: 350px;
+    font-size: 20px;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
+    margin: 5px;    
+}
+
 .button-green {
+    cursor: pointer;
     width: 350px;
     font-size: 20px;
     background-color: #157946;
@@ -174,6 +228,17 @@ input:autofill {
     padding-left: 6px;
     padding-right: 6px;
     margin: 5px;
+}
+
+.close-button {
+    cursor: pointer;
+    display: block;
+    background-color: #EC1B24;
+    border: none;
+    margin: auto;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: inherit;
 }
 
 
@@ -214,17 +279,31 @@ input:autofill {
     background-color: rgb(245, 245, 245);
     color: #006431;
 }
+.recipe-ingredient-row td {
+    padding: 5px 15px;
+}
 
 
 
-/*  BUTTONS */
-.close-button {
-    display: block;
-    background-color: #EC1B24;
-    border: none;
+/*  ADD WINDOW  */
+.add-window-container {
+    position: fixed;
+    z-index: 98;
+    left: 0px;
+    top: 0px;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+.add-window {
     margin: auto;
-    border-radius: 5px;
-    margin-top: 10px;
-    font-size: inherit;
+    overflow: scroll;
+    margin-top: 40px;
+    width: 350px;
+    max-height: 90%;
+    padding: 15px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.5);
 }
 

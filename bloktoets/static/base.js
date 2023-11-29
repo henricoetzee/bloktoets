@@ -10,7 +10,7 @@ top_bar_background_color_darker = spar_green_darker;
 document.addEventListener("DOMContentLoaded", () => {
     // Show message contained in "init_message" as returned from the server in the template.
     if (init_message != "none") {
-        show_message(init_message, "darkred");
+        show_message(init_message);
     };
 
     // Make username clickable
@@ -33,24 +33,26 @@ document.addEventListener("DOMContentLoaded", () => {
 // Show / hide user menu
 function usermenu_toggle() {
     let user_menu = document.getElementById("user_menu");
-    let user_name = document.getElementById("user_name");
     if (user_menu.style.display == "none") {
         user_menu.style.display = "block";
         user_menu.focus();
     }
 }
 
-// Function to show message for 4 seconds
-
-function show_message(message, color="darkgreen") {
+// Function to show message (notification)
+function show_message(message, color="#F9CB40") {
     let div = document.createElement("div");
     div.style.backgroundColor = color;
     div.innerHTML = message;
     div.className = "message";
     document.getElementById("message_container").appendChild(div);
     div.style.opacity = 100;
-    //div.innerHTML += `<span style="margin-left:15px;">👍</span>`;
-    div.addEventListener("click", () => {
+    // Close Button
+    let close_button = document.createElement("button");
+    close_button.innerHTML = "X";
+    close_button.className = "message-button";
+    div.appendChild(close_button);
+    close_button.addEventListener("click", () => {
         setTimeout(() => {
             div.style.opacity = 0;
         }, 0);
@@ -63,6 +65,28 @@ function show_message(message, color="darkgreen") {
             div.remove();
         }, 1000)
     })
+
+}
+
+function capitilize_first_letter(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 
+// Get CSRF cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
