@@ -4,7 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from bloktoets.models import Store, RecipeBook, Products, Packaging, Recipe, Recipe_relation, Product_relation, Packaging_relation
-
+import time
 
 
 def index(request):
@@ -74,6 +74,7 @@ def api(request):
             except Exception as e:
                 print(e)
                 return JsonResponse({"status": "failed", "error": "Server error while getting packaging"})
+        
         # Get single product
         if (request.GET['get'] == 'product'):
             try:
@@ -115,7 +116,8 @@ def api(request):
                     "packaging_ingredients": [i.serialize() for i in packaging_ingredients],
                     "cost_per_unit": recipe.cost_per_unit,
                     "gross_profit": recipe.gross_profit,
-                    "selling_price": recipe.selling_price
+                    "selling_price": recipe.selling_price,
+                    "recipe_yield": recipe.recipe_yield
                 })
             except Exception as e:
                 print(e)
@@ -137,6 +139,7 @@ def api(request):
                         scale_code = data["scale_code"],
                         packing_qty = float(data["packing_qty"]),
                         cost = float(data["cost"]),
+                        stock_on_hand = float(data["stock_on_hand"])
                     )
                     if (newP.packing_qty != 0):
                         newP.unit_price = newP.cost / newP.packing_qty
@@ -154,8 +157,9 @@ def api(request):
                 try:
                     p = Products.objects.get(id=data["id"])
                     p.scale_code = data["scale_code"]
-                    p.packing_qty = data["packing_qty"]
-                    p.cost = data["cost"]
+                    p.packing_qty = float(data["packing_qty"])
+                    p.cost = float(data["cost"])
+                    p.stock_on_hand = float(data["stock_on_hand"])
                     if (p.packing_qty != 0):
                         p.unit_price = float(p.cost) / float(p.packing_qty)
                     p.save()
@@ -175,6 +179,7 @@ def api(request):
                         scale_code = data["scale_code"],
                         packing_qty = float(data["packing_qty"]),
                         cost = float(data["cost"]),
+                        stock_on_hand = float(data["stock_on_hand"])
                     )
                     if (newP.packing_qty != 0):
                         newP.unit_price = newP.cost / newP.packing_qty
@@ -192,8 +197,9 @@ def api(request):
                 try:
                     p = Packaging.objects.get(id=data["id"])
                     p.scale_code = data["scale_code"]
-                    p.packing_qty = data["packing_qty"]
-                    p.cost = data["cost"]
+                    p.packing_qty = float(data["packing_qty"])
+                    p.cost = float(data["cost"])
+                    p.stock_on_hand = float(data["stock_on_hand"])
                     if (p.packing_qty != 0):
                         p.unit_price = float(p.cost) / float(p.packing_qty)
                     p.save()
@@ -212,7 +218,8 @@ def api(request):
                         recipe_book = recipe_book,
                         scale_code = data["scale_code"],
                         cost_per_unit = data["cost_per_unit"],
-                        selling_price = data["selling_price"]
+                        selling_price = data["selling_price"],
+                        recipe_yield = data["recipe_yield"]
                     )
                     recipe.gross_profit = (recipe.selling_price - recipe.cost_per_unit) / recipe.selling_price * 100
                     recipe.save()
@@ -253,6 +260,7 @@ def api(request):
                     recipe.scale_code = data["scale_code"]
                     recipe.cost_per_unit = data["cost_per_unit"]
                     recipe.selling_price = data["selling_price"]
+                    recipe.recipe_yield = data["recipe_yield"]
                     recipe.gross_profit = (recipe.selling_price - recipe.cost_per_unit) / recipe.selling_price * 100
                     recipe.save()
 

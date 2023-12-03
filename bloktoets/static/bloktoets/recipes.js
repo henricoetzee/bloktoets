@@ -1,7 +1,10 @@
 
 // ------------------------------RENDER FUNCTIONS----------------------------//
 function render_recipes(response, hist=true) {
+    if (response == null) {response = recipes};
     if (hist) {history.pushState({"where": "recipes", "data": response}, "")};
+    current_view = "recipes";
+
     // Update breadcrumb
     let recipebook_name = "";
     for (r in recipebooks.data) {
@@ -24,7 +27,10 @@ function render_recipes(response, hist=true) {
 }
 
 function render_products(response, hist=true) {
+    if (response == null) {response = products};
     if (hist) {history.pushState({"where": "products", "data": response}, "")};
+    current_view = "products";
+
     // Update breacrumb
     render_breadcrumbs();
 
@@ -38,7 +44,10 @@ function render_products(response, hist=true) {
 }
 
 function render_packaging(response, hist=true) {
+    if (response == null) {response = packaging};
     if (hist) {history.pushState({"where": "packaging", "data": response}, "")};
+    current_view = "packaging";
+
     // Update breacrumb
     render_breadcrumbs();
 
@@ -51,6 +60,25 @@ function render_packaging(response, hist=true) {
     render_table(response, function(id) {get_data("package", "Getting package...", id)});
 }
 
+function render_stock(hist=true) {
+    if (hist) {history.pushState({"where": "stock"}, "")};
+    current_view = "stock";
+
+    // Update breadcrumb
+    render_breadcrumbs();
+
+    // Render selector on breadcrumb
+    render_selector("stock");
+
+    // Get products and data if we don't have it already
+    if (products == null) {has_products = get_data("products", "Getting products", current_store, current_recipebook, false)}
+
+    if (packaging == null) {has_packaging = get_data("packaging", "Getting products", current_store, current_recipebook, false)}
+    
+    setTimeout(render_stock_table, 100);
+
+}
+
 
 // Renders a drop down selector to choose between recipes, products and packing materials.
 function render_selector(selected_component) {
@@ -60,7 +88,7 @@ function render_selector(selected_component) {
     selector_container.innerHTML = " > ";
     selector_container.style.marginLeft = "10px";
     
-    let select_options = ["recipes", "products", "packaging"]
+    let select_options = ["recipes", "products", "packaging", "stock"]
     let selector = document.createElement("select");
     selector.className = "component-selector";
     
@@ -94,6 +122,9 @@ function switch_component(component) {
         if (packaging == null) {get_data("packaging", "Getting packaging...", current_store, current_recipebook)}
         else (render_packaging(packaging))
     }
+    if (component == "stock") {
+        render_stock(stock)
+    }
     
 }
 
@@ -112,12 +143,13 @@ function render_button(button_name, button_function) {
     elem.appendChild(new_button);
 }
 
-
-function render_add_window(t, existing_item = false, response = null) {
+// Renders the add / modify window for products, recipes and packaging.  Most of the code is in
+// recipes_awc.js, which is accessed through the create_add_window_contents() function
+function render_add_window(what, existing_item = false, response = null, after_save_function) {
     let add_window_container = document.createElement("div");
     add_window_container.className = "add-window-container";
     
-    let add_window = create_add_window_contents(t, add_window_container, existing_item, response);
+    let add_window = create_add_window_contents(what, add_window_container, existing_item, response, after_save_function);
     
     let close_button = document.createElement("button");
     close_button.className = "button red-bg";

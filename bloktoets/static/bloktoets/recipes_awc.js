@@ -47,6 +47,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             r.packaging = response.packaging_ingredients;
             r.cost = response.cost_per_unit;
             r.selling = response.selling_price;
+            r.yield = response.recipe_yield;
             input_name.value = r.name;
             input_scale.value = r.scale_code;
         }
@@ -81,6 +82,9 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         // Add button holder
         content.appendChild(button_holder);
 
+        // Add hr
+        content.appendChild(document.createElement("hr"))
+
         // Render tables for all ingredients + Total price and selling price
         let ingredients_table_holder = document.createElement("div");
         ingredients_table_holder.id = "ingredients_table_holder";
@@ -105,7 +109,8 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "selling_price": parseFloat(r.selling),
                 "recipe_ingredients": r.recipe_ingredients,
                 "ingredients": r.ingredients,
-                "packaging": r.packaging
+                "packaging": r.packaging,
+                "recipe_yield": r.yield
             });
             send_data(data, "Sending recipe to server...", () => {get_data("recipes", "Getting recipes from server...", current_store, current_recipebook)})
         }
@@ -140,6 +145,21 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         input_cost.className = "text-input";
         content.appendChild(input_cost);
 
+        // Stock on hand
+        let input_stock_label = document.createElement("label");
+        input_stock_label.className = "text-input-label";
+        input_stock_label.htmlFor = "new_stock";
+        input_stock_label.innerHTML = "Stock on hand";
+        content.appendChild(input_stock_label);
+        let input_stock = document.createElement("input");
+        input_stock.id = "new_cost";
+        input_stock.type = "number";
+        input_stock.min = 0;
+        input_stock.step = 0.01;
+        input_stock.className = "text-input";
+        input_stock.value = 0;
+        content.appendChild(input_stock);
+
         // Checkbox to check if item should be visible to whole store
         let input_checkbox = document.createElement("input")
         input_checkbox.id = "store_visible";
@@ -151,7 +171,6 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         input_checkbox_label.htmlFor = "store_visible";
         input_checkbox_label.innerHTML = "Visible for whole store?";
         content.appendChild(input_checkbox_label);
-
 
         // TODO? Auto update field for price per quantity???
     
@@ -168,6 +187,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             id = response.item.id;
             input_checkbox.checked = response.store_visible;
             input_checkbox.disabled = true;
+            input_stock.value = response.item.stock_on_hand;
         }
 
         // Save button
@@ -186,11 +206,19 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "cost": input_cost.value,
                 "store_visible": input_checkbox.checked,
                 "store": current_store,
-                "recipe_book": current_recipebook
+                "recipe_book": current_recipebook,
+                "stock_on_hand": input_stock.value
             });
             if (t == "product") {f = function() {get_data("products", "Getting products...", current_store, current_recipebook)}};
             if (t == "packaging") {f = function() {get_data("packaging", "Getting packaging...", current_store, current_recipebook)}};
-            send_data(data, "Sending new item to server...", f);
+            send_data(data, "Sending new item to server...", () => {
+                if (current_view == "stock") {
+                    packaging = null;
+                    products = null;
+                    setTimeout(render_stock, 100);
+                }
+                else (f())
+            });
         }
         content.appendChild(save_button);
 
@@ -264,7 +292,7 @@ function render_add_contents_window(contents, content_type, recipe) {
             if (!tbody.childNodes[row].childNodes[0].innerHTML.toUpperCase().includes(filterbox.value.toUpperCase())) {
                 tbody.childNodes[row].style.display = "none";
             } else {
-                tbody.childNodes[row].style.display = "block";
+                tbody.childNodes[row].style.display = "table-row";
             }          
         }
     }
@@ -285,7 +313,7 @@ function render_ingredients_table(e, recipe, select_item) {
     e.innerHTML = "";
 
     // Reset recipe cost, will be calculated during table creation
-    recipe.cost = 0.0;
+    recipe.total_cost = 0.0;
 
     // ----------RECIPE INGREDIENTS----------------
     // Title and table header
@@ -331,14 +359,32 @@ function render_ingredients_table(e, recipe, select_item) {
         e.appendChild(packaging_ingredients_table);
     }
 
-    // Add cost grand total
-    let grand_total = document.createElement("h3");
-    grand_total.innerHTML = "Total cost: ";
-    grand_total.innerHTML += zar(recipe.cost);
-    e.appendChild(grand_total);
+    // Add yield input and label
+    let yield_input_label = document.createElement("label");
+    yield_input_label.className = "text-input-label";
+    yield_input_label.style.fontSize = "large";
+    yield_input_label.htmlFor = "yield_input";
+    yield_input_label.innerHTML = "Recipe yield: ";
+    e.appendChild(yield_input_label);
+    let yield_input = document.createElement("input");
+    yield_input.id = "selling_input";
+    yield_input.className = "text-input";
+    yield_input.style.width = "100px";
+    yield_input.value = recipe.yield;
+    e.appendChild(yield_input);
+
+    // Divide recipe cost by yield to get cost per unit
+    recipe.cost = recipe.total_cost / recipe.yield
+
+    // Render costs
+    let costs_div = document.createElement("div");
+    e.appendChild(costs_div);
+    create_costs(costs_div);
+
     // Add selling price input and label
     let selling_input_label = document.createElement("label");
     selling_input_label.className = "text-input-label";
+    selling_input_label.style.fontSize = "large";
     selling_input_label.htmlFor = "sellling_input";
     selling_input_label.innerHTML = "Selling price: R";
     e.appendChild(selling_input_label);
@@ -348,6 +394,13 @@ function render_ingredients_table(e, recipe, select_item) {
     selling_input.style.width = "100px";
     selling_input.value = recipe.selling;
     e.appendChild(selling_input);
+    // Add VAT inclusive selling price
+    let selling_with_vat = document.createElement("div");
+    selling_with_vat.className = "recipe-totals";
+    selling_with_vat.style.fontSize = "larger";
+    selling_with_vat.style.fontWeight = "bold";
+    selling_with_vat.innerHTML = "Selling with VAT: " + zar(recipe.selling * 1.15);
+    e.appendChild(selling_with_vat);
     // Add GP amount and %
     let gp_output = document.createElement("h3");
     create_totals(gp_output, selling_input.value, recipe);
@@ -364,9 +417,34 @@ function render_ingredients_table(e, recipe, select_item) {
             create_totals(gp_output, selling_input.value, recipe);
         }
     }
+    yield_input.onkeyup = function(key) {
+        let keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Enter", "Tab", "Backspace"]
+        if (keys.includes(key.key)) {
+            recipe.yield = yield_input.value;
+            recipe.cost = recipe.total_cost / recipe.yield;
+            create_costs(costs_div);
+        }
+    }
 
 
     // ---------------FUNCTIONS--------------------
+    // Function to render recipe costs
+    function create_costs(e) {
+        // Add cost without packaging
+        e.innerHTML = "";
+        let total_without_packaging = document.createElement("div");
+        total_without_packaging.className = "recipe-totals";
+        total_without_packaging.innerHTML = "Cost without packaging: ";
+        total_without_packaging.innerHTML += zar(recipe.cost - recipe.packaging_cost);
+        e.appendChild(total_without_packaging);
+        // Add cost grand total
+        let grand_total = document.createElement("div");
+        grand_total.className = "recipe-totals";
+        grand_total.innerHTML = "Cost with packaging: ";
+        grand_total.innerHTML += zar(recipe.cost);
+        e.appendChild(grand_total);
+    }
+
     // Function to calculate and render GP totals
     function create_totals(e, selling, recipe) {
         e.innerHTML = "";
@@ -407,6 +485,7 @@ function render_ingredients_table(e, recipe, select_item) {
             items = packaging;
         };
         let total = 0.0;
+        let total_qty = 0.0;
         for (line in data) {
             let row = body.insertRow();
             row.className = "recipe-ingredient-row"
@@ -427,6 +506,7 @@ function render_ingredients_table(e, recipe, select_item) {
             qty_input.style.width = "70px";
             qty_input.style.margin = "0px";
             qty_input.value = data[line][1];
+            total_qty += data[line][1];
 
             qty_input.onkeyup = function(key) {
                 let keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Enter", "Tab", "Backspace"]
@@ -467,17 +547,23 @@ function render_ingredients_table(e, recipe, select_item) {
             cell.appendChild(delete_button);
         }
         let row = body.insertRow();
-        // Two blank cells for total row
+        row.style.fontWeight = "bold";
+        // One blank cells for total row
         let cell = row.insertCell();
-        cell = row.insertCell();
         // Total label cell
         cell = row.insertCell();
         cell.innerHTML = "Total";
+        // Total qty cell
+        cell = row.insertCell();
+        cell.innerHTML = total_qty;
         // Total amount cell
         cell = row.insertCell();
         cell.innerHTML = zar(total);
         // Add to total recipe cost
-        recipe.cost += total;
+        recipe.total_cost += total;
+
+        // If we calculated packaging cos, add that to recipe object
+        if (what == "packaging") {recipe.packaging_cost = total};
 
         return body;
 
@@ -499,8 +585,12 @@ class Recipe {
         this.ingredients = [];
         this.packaging = [];
         this.cost = 0.0;
+        this.total_costs = 0.0;
+        this.packaging_cost = 0.0;
         this.selling = 0.0;
         this.id = -1;
+        this.yield = 1;
+        this.stock_on_hand = 0;
     }
     add_recipe_ingredient(id) {
         for (let i in this.recipe_ingredients) {

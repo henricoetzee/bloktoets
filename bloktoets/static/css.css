@@ -17,6 +17,12 @@ body {
 h3 {
     margin: 5px;
 }
+h4 {
+    margin: 5px;
+}
+h5 {
+    margin: 5px;
+}
 
 #main_view {
     margin: auto;
@@ -297,9 +303,9 @@ input:autofill {
 }
 .add-window {
     margin: auto;
-    overflow: scroll;
+    overflow: auto;
     margin-top: 40px;
-    width: 350px;
+    width: 360px;
     max-height: 90%;
     padding: 15px;
     background-color: white;
@@ -307,3 +313,10 @@ input:autofill {
     box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.5);
 }
 
+
+
+/* Recipe totals */
+.recipe-totals{
+    margin-right: 35%;
+    text-align: right;
+}
