@@ -229,8 +229,10 @@ def api(request):
                         selling_price = data["selling_price"],
                         recipe_yield = data["recipe_yield"]
                     )
-                    if (recipe.selling_price != 0):
+                    if recipe.selling_price != 0:
                         recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
+                    else:
+                        recipe.gross_profit = 0
                     recipe.save()
 
                     for item in data["recipe_ingredients"]:
@@ -270,7 +272,10 @@ def api(request):
                     recipe.cost_per_unit = data["cost_per_unit"]
                     recipe.selling_price = data["selling_price"]
                     recipe.recipe_yield = data["recipe_yield"]
-                    recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
+                    if recipe.selling_price != 0:
+                        recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
+                    else:
+                        recipe.gross_profit = 0
                     recipe.save()
 
                     # Remove all relations
@@ -332,7 +337,10 @@ def update_recipe_pricing():
             for used_packaging in Packaging_relation.objects.filter(recipe = recipe):
                 recipe.cost_per_unit += used_packaging.ingredient.cost / used_packaging.ingredient.packing_qty * used_packaging.amount
             recipe.cost_per_unit /= recipe.recipe_yield
-            recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
+            if recipe.selling_price != 0:
+                recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
+            else:
+                recipe.gross_profit = 0
             recipe.save()
     
     
