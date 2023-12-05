@@ -163,6 +163,10 @@ def api(request):
                     if (p.packing_qty != 0):
                         p.unit_price = float(p.cost) / float(p.packing_qty)
                     p.save()
+
+                    # Update recipe pricing:
+                    update_recipe_pricing()
+
                     return JsonResponse({"status": "success", "message": "Product updated"})
                 except Exception as e:
                     print(e)
@@ -203,6 +207,10 @@ def api(request):
                     if (p.packing_qty != 0):
                         p.unit_price = float(p.cost) / float(p.packing_qty)
                     p.save()
+
+                    # Update recipe pricing:
+                    update_recipe_pricing()
+
                     return JsonResponse({"status": "success", "message": "Packing updated"})
                 except Exception as e:
                     print(e)
@@ -221,7 +229,7 @@ def api(request):
                         selling_price = data["selling_price"],
                         recipe_yield = data["recipe_yield"]
                     )
-                    recipe.gross_profit = (recipe.selling_price - recipe.cost_per_unit) / recipe.selling_price * 100
+                    recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
                     recipe.save()
 
                     for item in data["recipe_ingredients"]:
@@ -261,7 +269,7 @@ def api(request):
                     recipe.cost_per_unit = data["cost_per_unit"]
                     recipe.selling_price = data["selling_price"]
                     recipe.recipe_yield = data["recipe_yield"]
-                    recipe.gross_profit = (recipe.selling_price - recipe.cost_per_unit) / recipe.selling_price * 100
+                    recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
                     recipe.save()
 
                     # Remove all relations
@@ -297,6 +305,9 @@ def api(request):
                         )
                         relation.save()
 
+                    # Update recipe pricing:
+                    update_recipe_pricing()
+
                     return JsonResponse({"status": "success", "message": "Recipe changed"})
 
                 except Exception as e:
@@ -305,3 +316,24 @@ def api(request):
 
         return JsonResponse({"status": "failed", "error": "Unknown request"})
     return JsonResponse({"status": "failed", "error": "Unknown request"})
+
+
+def update_recipe_pricing():
+
+    recipes = Recipe.objects.all()
+    for i in range(0,3):    # Run 3 times so that changes in recipes can be reflected in other recipes that was already changed.
+        for recipe in recipes:
+            recipe.cost_per_unit = 0
+            for used_recipes in Recipe_relation.objects.filter(recipe = recipe):
+                recipe.cost_per_unit += used_recipes.ingredient.cost_per_unit * used_recipes.amount
+            for used_products in Product_relation.objects.filter(recipe = recipe):
+                recipe.cost_per_unit += used_products.ingredient.cost / used_products.ingredient.packing_qty * used_products.amount
+            for used_packaging in Packaging_relation.objects.filter(recipe = recipe):
+                recipe.cost_per_unit += used_packaging.ingredient.cost / used_packaging.ingredient.packing_qty * used_packaging.amount
+            recipe.cost_per_unit /= recipe.recipe_yield
+            recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
+            recipe.save()
+    
+    
+
+        

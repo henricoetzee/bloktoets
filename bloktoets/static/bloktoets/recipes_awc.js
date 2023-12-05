@@ -209,6 +209,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "recipe_book": current_recipebook,
                 "stock_on_hand": input_stock.value
             });
+            recipes = null;
             if (t == "product") {f = function() {get_data("products", "Getting products...", current_store, current_recipebook)}};
             if (t == "packaging") {f = function() {get_data("packaging", "Getting packaging...", current_store, current_recipebook)}};
             send_data(data, "Sending new item to server...", () => {
@@ -381,10 +382,17 @@ function render_ingredients_table(e, recipe, select_item) {
     e.appendChild(costs_div);
     create_costs(costs_div);
 
+    // Add VAT exclusive selling price
+    let selling_without_vat = document.createElement("div");
+    selling_without_vat.className = "recipe-totals";
+    selling_without_vat.style.fontWeight = "bold";
+    selling_without_vat.innerHTML = "Selling without VAT: " + zar(recipe.selling / 1.15);
+    e.appendChild(selling_without_vat);
+
     // Add selling price input and label
     let selling_input_label = document.createElement("label");
     selling_input_label.className = "text-input-label";
-    selling_input_label.style.fontSize = "large";
+    selling_input_label.style.fontSize = "larger";
     selling_input_label.htmlFor = "sellling_input";
     selling_input_label.innerHTML = "Selling price: R";
     e.appendChild(selling_input_label);
@@ -392,15 +400,10 @@ function render_ingredients_table(e, recipe, select_item) {
     selling_input.id = "selling_input";
     selling_input.className = "text-input";
     selling_input.style.width = "100px";
+    selling_input.style.fontSize = "larger";
     selling_input.value = recipe.selling;
     e.appendChild(selling_input);
-    // Add VAT inclusive selling price
-    let selling_with_vat = document.createElement("div");
-    selling_with_vat.className = "recipe-totals";
-    selling_with_vat.style.fontSize = "larger";
-    selling_with_vat.style.fontWeight = "bold";
-    selling_with_vat.innerHTML = "Selling with VAT: " + zar(recipe.selling * 1.15);
-    e.appendChild(selling_with_vat);
+
     // Add GP amount and %
     let gp_output = document.createElement("h3");
     create_totals(gp_output, selling_input.value, recipe);
@@ -448,11 +451,12 @@ function render_ingredients_table(e, recipe, select_item) {
     // Function to calculate and render GP totals
     function create_totals(e, selling, recipe) {
         e.innerHTML = "";
-        let gp = selling - recipe.cost;
+        let gp = (selling / 1.15) - recipe.cost;
         let gp_percent = 0;
-        if (selling > 0) {gp_percent = gp / selling * 100};
+        if (selling > 0) {gp_percent = gp / (selling / 1.15) * 100};
         e.innerHTML = "GP = " + zar(gp) + " (" + gp_percent.toFixed(1) + "%)";
         recipe.selling = selling;
+        selling_without_vat.innerHTML = "Selling without VAT: " + zar(recipe.selling / 1.15);
     }
 
     // Function to create table headers
@@ -496,6 +500,7 @@ function render_ingredients_table(e, recipe, select_item) {
             // Cost
             cell = row.insertCell();
             let line_total = line_item["unit_price"]
+            if (what == "recipe_ingredients") {line_total = line_item["cost_per_unit"]}
             cell.innerHTML = zar(line_total)
             // Qty input
             cell = row.insertCell();
