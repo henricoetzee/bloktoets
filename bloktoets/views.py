@@ -229,7 +229,8 @@ def api(request):
                         selling_price = data["selling_price"],
                         recipe_yield = data["recipe_yield"]
                     )
-                    recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
+                    if (recipe.selling_price != 0):
+                        recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
                     recipe.save()
 
                     for item in data["recipe_ingredients"]:
