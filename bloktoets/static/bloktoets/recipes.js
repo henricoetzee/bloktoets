@@ -71,9 +71,9 @@ function render_stock(hist=true) {
     render_selector("stock");
 
     // Get products and data if we don't have it already
-    if (products == null) {has_products = get_data("products", "Getting products", current_store, current_recipebook, false)}
-
-    if (packaging == null) {has_packaging = get_data("packaging", "Getting products", current_store, current_recipebook, false)}
+    if (products == null) {get_data("products", "Getting products", current_store, current_recipebook, false)};
+    if (packaging == null) {get_data("packaging", "Getting products", current_store, current_recipebook, false)};
+    if (recipes == null) {get_data("recipes", "Getting recipes", current_store, current_recipebook, false)};
     
     setTimeout(render_stock_table, 100);
 

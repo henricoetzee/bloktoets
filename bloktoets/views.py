@@ -120,10 +120,12 @@ def api(request):
                     "product_ingredients": [i.serialize() for i in product_ingredients],
                     "packaging_ingredients": [i.serialize() for i in packaging_ingredients],
                     "cost_per_unit": recipe.cost_per_unit,
+                    "unit_price": recipe.cost_per_unit,  # Extra name for cost, blame bad planning
                     "gross_profit": recipe.gross_profit,
                     "selling_price": recipe.selling_price,
                     "recipe_yield": recipe.recipe_yield,
-                    "used_in": [r.recipe.name for r in used_in]
+                    "used_in": [r.recipe.name for r in used_in],
+                    "stock_on_hand": recipe.stock_on_hand
                 })
             except Exception as e:
                 print(e)
@@ -256,7 +258,8 @@ def api(request):
                         scale_code = data["scale_code"],
                         cost_per_unit = data["cost_per_unit"],
                         selling_price = data["selling_price"],
-                        recipe_yield = data["recipe_yield"]
+                        recipe_yield = data["recipe_yield"],
+                        stock_on_hand = data["stock_on_hand"]
                     )
                     if recipe.selling_price != 0:
                         recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
@@ -301,6 +304,7 @@ def api(request):
                     recipe.cost_per_unit = data["cost_per_unit"]
                     recipe.selling_price = data["selling_price"]
                     recipe.recipe_yield = data["recipe_yield"]
+                    recipe.stock_on_hand = data["stock_on_hand"]
                     if recipe.selling_price != 0:
                         recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
                     else:

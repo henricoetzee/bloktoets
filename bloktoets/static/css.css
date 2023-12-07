@@ -29,6 +29,11 @@ h5 {
     margin-top: 50px;
 }
 
+.disabled {
+    background-color: gray;
+    cursor: not-allowed !important;
+}
+
 .green-bg {
     background-color: #157946;
 }

@@ -135,6 +135,15 @@ function render_stock_table(clear_main=true, where="main_view") {
     render_to = document.getElementById(where);
     if (clear_main) {render_to.innerHTML = ""};
 
+    // Create recipe header
+    let recipe_ingredients_header = document.createElement("h4");
+    recipe_ingredients_header.innerHTML = "Recipes:";
+    recipe_ingredients_header.style.textAlign = "center";
+    render_to.appendChild(recipe_ingredients_header);
+
+    // Create recipe table
+    render_to.appendChild(render_items_table(recipes, (id) => {get_data("recipe", "Getting recipe...", id)}));
+
     // Create products header
     let product_ingredients_header = document.createElement("h4");
     product_ingredients_header.innerHTML = "Products:";
@@ -144,7 +153,7 @@ function render_stock_table(clear_main=true, where="main_view") {
     // Create products table
     render_to.appendChild(render_items_table(products, (id) => {get_data("product", "Getting product...", id)}));
 
-    // Create products header
+    // Create packaging header
     let packaging_ingredients_header = document.createElement("h4");
     packaging_ingredients_header.innerHTML = "Packaging:";
     packaging_ingredients_header.style.textAlign = "center";

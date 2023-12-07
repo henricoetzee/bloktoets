@@ -124,7 +124,7 @@ function confirm_dialog(message, func) {
                     confirm_button.innerHTML = "Confirm 1";
                     setTimeout(() => {
                         confirm_button.innerHTML = "Confirm";
-                        confirm_button.className = "button green-bg";
+                        confirm_button.className = "button red-bg";
                         confirm_button.style.cursor = "pointer";
                         confirm_button.onclick = function() {
                             container.remove();

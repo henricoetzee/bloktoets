@@ -73,6 +73,7 @@ class Recipe(models.Model):
     gross_profit = models.FloatField()
     selling_price = models.FloatField()
     recipe_yield = models.FloatField()
+    stock_on_hand = models.FloatField(default=0)
     ingredients = models.ManyToManyField(
         Products,
         blank=True,
@@ -100,7 +101,8 @@ class Recipe(models.Model):
             "scale_code": self.scale_code,
             "cost_per_unit": self.cost_per_unit,
             "gross_profit": self.gross_profit,
-            "unit_price": self.selling_price
+            "unit_price": self.selling_price,
+            "stock_on_hand": self.stock_on_hand
         }
 
 class Recipe_relation(models.Model):

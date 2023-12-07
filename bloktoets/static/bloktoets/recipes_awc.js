@@ -48,6 +48,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             r.cost = response.cost_per_unit;
             r.selling = response.selling_price;
             r.yield = response.recipe_yield;
+            r.stock_on_hand = response.stock_on_hand;
             input_name.value = r.name;
             input_scale.value = r.scale_code;
         }
@@ -55,6 +56,21 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         // Make window bigger and center display
         content.style.width = "875px";
         content.style.textAlign = "center";
+
+        // Add stock on hand input
+        let input_stock_label = document.createElement("label");
+        input_stock_label.className = "text-input-label";
+        input_stock_label.htmlFor = "new_stock";
+        input_stock_label.innerHTML = "Stock on hand";
+        content.appendChild(input_stock_label);
+        let input_stock = document.createElement("input");
+        input_stock.id = "new_cost";
+        input_stock.type = "number";
+        input_stock.min = 0;
+        input_stock.step = 0.01;
+        input_stock.className = "text-input";
+        input_stock.value = r.stock_on_hand;
+        content.appendChild(input_stock);
 
         // -------Add the +Recipe +Product +Packaging buttons
         let button_holder = document.createElement("div");
@@ -110,9 +126,20 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "recipe_ingredients": r.recipe_ingredients,
                 "ingredients": r.ingredients,
                 "packaging": r.packaging,
-                "recipe_yield": r.yield
+                "recipe_yield": r.yield,
+                "stock_on_hand": input_stock.value
             });
-            send_data(data, "Sending recipe to server...", () => {get_data("recipes", "Getting recipes from server...", current_store, current_recipebook)})
+            send_data(data, "Sending recipe to server...", () => {
+                if (current_view == "stock") {
+                    packaging = null;
+                    recipes = null;
+                    products = null;
+                    setTimeout(render_stock, 100);
+                }else{
+                    get_data("recipes", "Getting recipes from server...", current_store, current_recipebook);
+                }
+
+            })
         }
 
         content.appendChild(save_button);
@@ -228,12 +255,16 @@ function create_add_window_contents(t, add_window_container, existing_item=false
     // Add used in and delete button for existing items:
     if (existing_item) {
         // Add used in button
-        let used_in_button = document.createElement("button");
-        used_in_button.className = "button blue-bg";
-        used_in_button.innerHTML = "Used in?";
-        used_in_button.onclick = function() {show_popup(response.used_in.join("<br>"), true)};
-        content.appendChild(used_in_button);
 
+        let used_in_button = document.createElement("button");
+        used_in_button.innerHTML = "Not used in any recipes";
+        used_in_button.className = "button disabled";
+        content.appendChild(used_in_button);
+        if (response.used_in.length > 0) {
+            used_in_button.className = "button blue-bg";
+            used_in_button.innerHTML = "Used in?";
+            used_in_button.onclick = function() {show_popup(response.used_in.join("<br>"), true)};
+        }
         // Add delete button
         let delete_button = document.createElement("button");
         delete_button.className = "button black-bg";
@@ -550,7 +581,7 @@ function render_ingredients_table(e, recipe, select_item) {
             qty_input.type = "number";
             qty_input.className = "text-input";
             qty_input.id = what + line_item["id"]
-            qty_input.style.width = "70px";
+            qty_input.style.width = "90px";
             qty_input.style.margin = "0px";
             qty_input.value = data[line][1];
             total_qty += data[line][1];
