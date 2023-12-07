@@ -225,6 +225,48 @@ function create_add_window_contents(t, add_window_container, existing_item=false
 
     }
 
+    // Add used in and delete button for existing items:
+    if (existing_item) {
+        // Add used in button
+        let used_in_button = document.createElement("button");
+        used_in_button.className = "button blue-bg";
+        used_in_button.innerHTML = "Used in?";
+        used_in_button.onclick = function() {show_popup(response.used_in.join("<br>"), true)};
+        content.appendChild(used_in_button);
+
+        // Add delete button
+        let delete_button = document.createElement("button");
+        delete_button.className = "button black-bg";
+        delete_button.innerHTML = "Delete";
+        delete_button.onclick = function() {
+            let message = "Are you sure you want to delete this item?";
+            if (response.used_in.length > 0) {
+                message += "<br>This item is still used in " + response.used_in.length + " recipe(s).";
+            }
+            confirm_dialog(message, () => {
+                add_window_container.remove();
+                let id;
+                if (t == "recipe") {id = response.id}
+                else {id = response.item.id}
+                recipes = null;
+                packaging = null;
+                products = null;
+                let func;
+                if (t == "product") {func = function() {get_data("products", "Getting products...", current_store, current_recipebook)}}
+                if (t == "packaging") {func = function() {get_data("packaging", "Getting packaging...", current_store, current_recipebook)}}
+                if (t == "recipe") {func = function() {get_data("recipes", "Getting recipes...", current_store, current_recipebook)}}
+                data = JSON.stringify({
+                    "todo": "delete",
+                    "what": t,
+                    "id": id,
+                })
+                send_data(data, "Deleting item...", () => {
+                    setTimeout(func, 100);
+                })
+            });
+        };
+        content.appendChild(delete_button);
+    }
 
     return content;
 }
@@ -513,12 +555,14 @@ function render_ingredients_table(e, recipe, select_item) {
             qty_input.value = data[line][1];
             total_qty += data[line][1];
 
-            qty_input.onkeyup = function(key) {
-                let keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Enter", "Tab", "Backspace"]
-                if (keys.includes(key.key)) {
-                    qty_changed()
-                }
-            }
+            qty_input.onchange = function() {qty_changed()}
+            // Old event listener that used keyup
+            // qty_input.onkeyup = function(key) {
+            //     let keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Enter", "Tab", "Backspace"]
+            //     if (keys.includes(key.key)) {
+            //         qty_changed()
+            //     }
+            // }
 
             // Function to re-render table and alter recipe object after qty of item is changed
             function qty_changed() {

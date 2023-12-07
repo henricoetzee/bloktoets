@@ -244,10 +244,10 @@ function render_breadcrumbs() {
 }
 
 //-----------------------------SHOW POPUP MESSAGE---------------------------
-function show_popup(message) {
+function show_popup(message, show_close_button_immediately) {
     let popup_container = document.createElement("div");
     popup_container.className = "popup-container";
-    popup = document.createElement("div");
+    let popup = document.createElement("div");
     popup.innerHTML = message;
     popup_container.appendChild(popup);
     let close_button = document.createElement("button");
@@ -255,7 +255,8 @@ function show_popup(message) {
     close_button.innerHTML = "Close";
     close_button.onclick = function() {popup_container.remove();}
     document.body.appendChild(popup_container);
-    setTimeout(() => {popup.appendChild(close_button)},4000);
+    if (show_close_button_immediately) {popup.appendChild(close_button)}
+    else {setTimeout(() => {popup.appendChild(close_button)},4000)};
     return popup_container;
 }
 

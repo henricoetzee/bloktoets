@@ -90,3 +90,49 @@ function getCookie(name) {
     return cookieValue;
 }
 const csrftoken = getCookie('csrftoken');
+
+
+function confirm_dialog(message, func) {
+    let container = document.createElement("div");
+    container.className = "popup-container";
+    document.body.appendChild(container);
+
+    let dialog = document.createElement("div");
+    dialog.style.width = "360px";
+    dialog.innerHTML = message;
+    container.appendChild(dialog);
+
+    let confirm_button = document.createElement("button");
+    confirm_button.className = "button black-bg";
+    confirm_button.style.cursor = "not-allowed";
+    confirm_button.innerHTML = "Confirm 5";
+    dialog.appendChild(confirm_button);
+
+    let cancel_button = document.createElement("button");
+    cancel_button.className = "button blue-bg";
+    cancel_button.innerHTML = "Cancel";
+    cancel_button.onclick = function() {container.remove()};
+    dialog.appendChild(cancel_button);
+
+    setTimeout(() => {
+        confirm_button.innerHTML = "Confirm 4";
+        setTimeout(() => {
+            confirm_button.innerHTML = "Confirm 3";
+            setTimeout(() => {
+                confirm_button.innerHTML = "Confirm 2";
+                setTimeout(() => {
+                    confirm_button.innerHTML = "Confirm 1";
+                    setTimeout(() => {
+                        confirm_button.innerHTML = "Confirm";
+                        confirm_button.className = "button green-bg";
+                        confirm_button.style.cursor = "pointer";
+                        confirm_button.onclick = function() {
+                            container.remove();
+                            func();
+                        };
+                    },1000)
+                },1000)
+            },1000)
+        },1000)
+    }, 1000)
+}

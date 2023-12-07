@@ -35,6 +35,18 @@ h5 {
 .red-bg {
     background-color: #EC1B24;
 }
+.black-bg {
+    background-color: #000000;
+}
+.sunglow-bg {
+    background-color: #F9CB40;
+}
+.blue-bg {
+    background-color: #2F52E0;
+}
+.lime-bg {
+    background-color: #BCED09;
+}
 
 /* NAV BAR */
 .top-bar {
@@ -149,7 +161,7 @@ h5 {
 }
 .popup-container div {
     background-color: white;
-    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 30px 0 rgba(0, 0, 0, 1);
     border-radius: 15px;
     width: fit-content;
     margin: auto;

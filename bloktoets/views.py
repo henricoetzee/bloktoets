@@ -79,10 +79,12 @@ def api(request):
         if (request.GET['get'] == 'product'):
             try:
                 product = Products.objects.get(id=request.GET['id'])
+                used_in = Product_relation.objects.filter(ingredient=product)
                 return JsonResponse({
                     "status": "success",
                     "item": product.serialize(),
-                    "store_visible": True if product.store is not None else False
+                    "store_visible": True if product.store is not None else False,
+                    "used_in": [r.recipe.name for r in used_in]
                 })
             except Exception as e:
                 print(e)
@@ -91,10 +93,12 @@ def api(request):
         if (request.GET['get'] == 'package'):
             try:
                 package = Packaging.objects.get(id=request.GET['id'])
+                used_in = Packaging_relation.objects.filter(ingredient=package)
                 return JsonResponse({
                     "status": "success",
                     "item": package.serialize(),
-                    "store_visible": True if package.store is not None else False
+                    "store_visible": True if package.store is not None else False,
+                    "used_in": [r.recipe.name for r in used_in]
                 })
             except Exception as e:
                 print(e)
@@ -106,6 +110,7 @@ def api(request):
                 recipe_ingredients = Recipe_relation.objects.filter(recipe=recipe)
                 product_ingredients = Product_relation.objects.filter(recipe=recipe)
                 packaging_ingredients = Packaging_relation.objects.filter(recipe=recipe)
+                used_in = Recipe_relation.objects.filter(ingredient=recipe)
                 return JsonResponse({
                     "status": "success",
                     "id": recipe.id,
@@ -117,7 +122,8 @@ def api(request):
                     "cost_per_unit": recipe.cost_per_unit,
                     "gross_profit": recipe.gross_profit,
                     "selling_price": recipe.selling_price,
-                    "recipe_yield": recipe.recipe_yield
+                    "recipe_yield": recipe.recipe_yield,
+                    "used_in": [r.recipe.name for r in used_in]
                 })
             except Exception as e:
                 print(e)
@@ -171,6 +177,17 @@ def api(request):
                 except Exception as e:
                     print(e)
                     return JsonResponse({"status": "failed", "error": "Failed to update product"})
+            
+            if (data['todo'] == 'delete'): #-------------DELETE PRODUCT
+                try:
+                    p = Products.objects.get(id=data["id"])
+                    p.delete()
+                    # Recalculate recipe costing
+                    update_recipe_pricing()
+                    return JsonResponse({"status": "success"})
+                except Exception as e:
+                    print(e)
+                    return JsonResponse({"status": "failed", "error": "Failed to delete product"})
 
                 
         # -------------PACKAGING---------------#
@@ -215,6 +232,18 @@ def api(request):
                 except Exception as e:
                     print(e)
                     return JsonResponse({"status": "failed", "error": "Failed to update product"})
+        
+            if (data['todo'] == 'delete'): #-------------DELETE PACKAGING
+                try:
+                    p = Packaging.objects.get(id=data["id"])
+                    p.delete()
+                    # Recalculate recipe costing
+                    update_recipe_pricing()
+                    return JsonResponse({"status": "success"})
+                except Exception as e:
+                    print(e)
+                    return JsonResponse({"status": "failed", "error": "Failed to delete packaging"})
+                
         # -----------------RECIPE-----------------------#
         if (data['what'] == "recipe"):
 
@@ -318,7 +347,19 @@ def api(request):
 
                 except Exception as e:
                     print(e)
-                    return JsonResponse({"status": "failed", "error": "Exeption occurred"})
+                    return JsonResponse({"status": "failed", "error": "Could not change recipe"})
+            
+            if (data['todo'] == 'delete'): #-------------DELETE RECIPE
+                try:
+                    r = Recipe.objects.get(id=data["id"])
+                    r.delete()
+                    # Recalculate recipe costing
+                    update_recipe_pricing()
+                    return JsonResponse({"status": "success"})
+                except Exception as e:
+                    print(e)
+                    return JsonResponse({"status": "failed", "error": "Failed to delete recipe"})
+
 
         return JsonResponse({"status": "failed", "error": "Unknown request"})
     return JsonResponse({"status": "failed", "error": "Unknown request"})
