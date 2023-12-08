@@ -626,6 +626,8 @@ function render_ingredients_table(e, recipe, select_item) {
             }
             cell.appendChild(delete_button);
         }
+
+        // TOTAL ROW
         let row = body.insertRow();
         row.style.fontWeight = "bold";
         // One blank cells for total row
@@ -635,7 +637,7 @@ function render_ingredients_table(e, recipe, select_item) {
         cell.innerHTML = "Total";
         // Total qty cell
         cell = row.insertCell();
-        cell.innerHTML = total_qty;
+        cell.innerHTML = parseFloat(total_qty.toFixed(3));
         // Total amount cell
         cell = row.insertCell();
         cell.innerHTML = zar(total);
