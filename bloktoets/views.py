@@ -290,6 +290,7 @@ def api(request):
                             amount = item[1]
                         )
                         relation.save()
+                    
                     return JsonResponse({"status": "success", "message": "Recipe successfully created"})
 
                 except Exception as e:
@@ -344,6 +345,10 @@ def api(request):
                         )
                         relation.save()
 
+                    # Check for loops
+                    if find_loop_all():
+                        return JsonResponse({"status": "success", "message": "Recipe saved, but there is a loop in the recipe ingredients, recipe pricing cannot be updated correctly. Please fix!"})
+
                     # Update recipe pricing:
                     update_recipe_pricing()
 
@@ -372,7 +377,7 @@ def api(request):
 def update_recipe_pricing():
 
     recipes = Recipe.objects.all()
-    for i in range(0,3):    # Run 3 times so that changes in recipes can be reflected in other recipes that was already changed.
+    for i in range(0,10):    # Run 10 times so that changes in recipes can be reflected in other recipes that was already changed.
         for recipe in recipes:
             recipe.cost_per_unit = 0
             for used_recipes in Recipe_relation.objects.filter(recipe = recipe):
@@ -388,6 +393,28 @@ def update_recipe_pricing():
                 recipe.gross_profit = 0
             recipe.save()
     
-    
+def find_loop(id, console_out=False, depth=0, next_id=False):
+    # End if traversal goes to deep. (possible loop prevention)
+    if depth > 50:
+        return False
+    # next_id will be false on the first iteration
+    if not next_id:
+        next_id = id
+    relations = Recipe_relation.objects.filter(recipe__id=next_id)
+    for r in relations:
+        if console_out:
+            print(str(next_id) + " -> " + str(r.ingredient.id))
+        if r.ingredient.id == id:
+            return True
+        if find_loop(id, console_out, depth + 1, r.ingredient.id):
+            return True
+    return False
 
-        
+def find_loop_all(console_out=False):
+    recipes = Recipe.objects.all()
+    for r in recipes:
+        if console_out:
+            print(str(r.id) + ": " + r.name)
+        if (find_loop(r.id, console_out)):
+            return True
+    return False
