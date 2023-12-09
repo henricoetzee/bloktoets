@@ -52,7 +52,11 @@ function show_message(message, color="#F9CB40") {
     close_button.innerHTML = "X";
     close_button.className = "message-button";
     div.appendChild(close_button);
-    close_button.addEventListener("click", () => {
+    close_button.addEventListener("click", () => {close_message()})
+
+    if (color != "#EC1B24") {setTimeout(() => {close_message()}, 5000)}
+
+    function close_message() {
         setTimeout(() => {
             div.style.opacity = 0;
         }, 0);
@@ -64,7 +68,7 @@ function show_message(message, color="#F9CB40") {
         setTimeout(() => {
             div.remove();
         }, 1000)
-    })
+    }
 
 }
 

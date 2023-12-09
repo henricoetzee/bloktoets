@@ -14,7 +14,7 @@ function get_data(what, loading_message="Loading...", id=false, recipebook=false
             response = JSON.parse(request.responseText);
             popup.remove();
             if (response["status"] == "failed") {
-                show_message(response["error"],)
+                show_message(response["error"], "#EC1B24")
             };
             if (what == "stores") {
                 stores = response;
@@ -48,7 +48,7 @@ function get_data(what, loading_message="Loading...", id=false, recipebook=false
         }else{
             console.error(request.responseText);
             popup.remove();
-            show_message("Error getting data from server");
+            show_message("Error getting data from server", "#EC1B24");
         }
     }
     request.send(null)
@@ -76,7 +76,7 @@ function send_data(data, loading_message="Sending data...", f) {
                 show_message("Success")
             }
         }
-        else if (response['status'] == "failed") {show_message(response['error'])}
+        else if (response['status'] == "failed") {show_message(response['error'], "#EC1B24")}
         else {show_message("Error may have occurred. Check data.")};
         f();
     })

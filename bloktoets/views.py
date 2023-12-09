@@ -173,7 +173,7 @@ def api(request):
                     p.save()
 
                     # Update recipe pricing:
-                    update_recipe_pricing()
+                    update_pricing("product", p.id)
 
                     return JsonResponse({"status": "success", "message": "Product updated"})
                 except Exception as e:
@@ -185,7 +185,7 @@ def api(request):
                     p = Products.objects.get(id=data["id"])
                     p.delete()
                     # Recalculate recipe costing
-                    update_recipe_pricing()
+                    update_recipe_pricing_all()
                     return JsonResponse({"status": "success"})
                 except Exception as e:
                     print(e)
@@ -228,7 +228,7 @@ def api(request):
                     p.save()
 
                     # Update recipe pricing:
-                    update_recipe_pricing()
+                    update_pricing("packaging", p.id)
 
                     return JsonResponse({"status": "success", "message": "Packing updated"})
                 except Exception as e:
@@ -240,7 +240,7 @@ def api(request):
                     p = Packaging.objects.get(id=data["id"])
                     p.delete()
                     # Recalculate recipe costing
-                    update_recipe_pricing()
+                    update_recipe_pricing_all()
                     return JsonResponse({"status": "success"})
                 except Exception as e:
                     print(e)
@@ -347,10 +347,10 @@ def api(request):
 
                     # Check for loops
                     if find_loop_all():
-                        return JsonResponse({"status": "success", "message": "Recipe saved, but there is a loop in the recipe ingredients, recipe pricing cannot be updated correctly. Please fix!"})
+                        return JsonResponse({"status": "failed", "error": "Recipe saved, but there is a loop in the recipe ingredients, recipe pricing cannot be updated. Please fix!"})
 
                     # Update recipe pricing:
-                    update_recipe_pricing()
+                    update_pricing("recipe", recipe.id)
 
                     return JsonResponse({"status": "success", "message": "Recipe changed"})
 
@@ -363,7 +363,7 @@ def api(request):
                     r = Recipe.objects.get(id=data["id"])
                     r.delete()
                     # Recalculate recipe costing
-                    update_recipe_pricing()
+                    update_recipe_pricing_all()
                     return JsonResponse({"status": "success"})
                 except Exception as e:
                     print(e)
@@ -373,25 +373,67 @@ def api(request):
         return JsonResponse({"status": "failed", "error": "Unknown request"})
     return JsonResponse({"status": "failed", "error": "Unknown request"})
 
+# Old update pricing function
+# def update_recipe_pricing():
+#     recipes = Recipe.objects.all()
+#     for i in range(0,10):    # Run 10 times so that changes in recipes can be reflected in other recipes that was already changed.
+#         for recipe in recipes:
+#             recipe.cost_per_unit = 0
+#             for used_recipes in Recipe_relation.objects.filter(recipe = recipe):
+#                 recipe.cost_per_unit += used_recipes.ingredient.cost_per_unit * used_recipes.amount
+#             for used_products in Product_relation.objects.filter(recipe = recipe):
+#                 recipe.cost_per_unit += used_products.ingredient.cost / used_products.ingredient.packing_qty * used_products.amount
+#             for used_packaging in Packaging_relation.objects.filter(recipe = recipe):
+#                 recipe.cost_per_unit += used_packaging.ingredient.cost / used_packaging.ingredient.packing_qty * used_packaging.amount
+#             recipe.cost_per_unit /= recipe.recipe_yield
+#             if recipe.selling_price != 0:
+#                 recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
+#             else:
+#                 recipe.gross_profit = 0
+#             recipe.save()
 
-def update_recipe_pricing():
+def update_pricing(what_canged, id):
+    relations = False
+    if what_canged == "product":
+        relations = Product_relation.objects.filter(ingredient__id=id)
+    if what_canged == "packaging":
+        relations = Packaging_relation.objects.filter(ingredient__id=id)
+    if what_canged == "recipe":
+        relations = Recipe_relation.objects.filter(ingredient__id=id)
+    if relations != False:
+        for r in relations:
+            update_recipe_pricing(r.recipe.id)
 
+def update_recipe_pricing_all():
     recipes = Recipe.objects.all()
-    for i in range(0,10):    # Run 10 times so that changes in recipes can be reflected in other recipes that was already changed.
-        for recipe in recipes:
-            recipe.cost_per_unit = 0
-            for used_recipes in Recipe_relation.objects.filter(recipe = recipe):
-                recipe.cost_per_unit += used_recipes.ingredient.cost_per_unit * used_recipes.amount
-            for used_products in Product_relation.objects.filter(recipe = recipe):
-                recipe.cost_per_unit += used_products.ingredient.cost / used_products.ingredient.packing_qty * used_products.amount
-            for used_packaging in Packaging_relation.objects.filter(recipe = recipe):
-                recipe.cost_per_unit += used_packaging.ingredient.cost / used_packaging.ingredient.packing_qty * used_packaging.amount
-            recipe.cost_per_unit /= recipe.recipe_yield
-            if recipe.selling_price != 0:
-                recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
-            else:
-                recipe.gross_profit = 0
-            recipe.save()
+    if recipes.count() > 0:
+        for r in recipes:
+            update_pricing("recipe", r.id)
+
+def update_recipe_pricing(id = False, depth=0):
+
+    if depth > 50:
+        return
+    recipe = Recipe.objects.get(id=id)
+    recipe.cost_per_unit = 0
+    for used_recipes in Recipe_relation.objects.filter(recipe = recipe):
+        recipe.cost_per_unit += used_recipes.ingredient.cost_per_unit * used_recipes.amount
+    for used_products in Product_relation.objects.filter(recipe = recipe):
+        recipe.cost_per_unit += used_products.ingredient.cost / used_products.ingredient.packing_qty * used_products.amount
+    for used_packaging in Packaging_relation.objects.filter(recipe = recipe):
+        recipe.cost_per_unit += used_packaging.ingredient.cost / used_packaging.ingredient.packing_qty * used_packaging.amount
+    recipe.cost_per_unit /= recipe.recipe_yield
+    if recipe.selling_price != 0:
+        recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
+    else:
+        recipe.gross_profit = 0
+    recipe.save()
+
+    new_recipes = Recipe_relation.objects.filter(ingredient=recipe)
+    if new_recipes.count() > 0:
+        for r in new_recipes:
+            update_recipe_pricing(r.recipe.id, depth + 1)
+    return
     
 def find_loop(id, console_out=False, depth=0, next_id=False):
     # End if traversal goes to deep. (possible loop prevention)
