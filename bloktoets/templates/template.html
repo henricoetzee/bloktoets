@@ -23,9 +23,11 @@
                 <span id="app_name" style="float: left;">Bloktoets</span>
             
             {% comment %} RIGHT SIDE OF NAV BAR {% endcomment %}
-                <span style="float: right;" id="user_name">
-                {% if user.is_authenticated %}
-                    {{user.username}}
+                <span style="float: right;" id="nav_right">
+                    <span id="user_name" style="margin-top:-5px">
+                    {% if user.is_authenticated %}
+                        {{user.username}}
+                    </span>
                 </span>
                     <div id="user_menu" tabindex="-1">
                         <a href="/change_password"><li>Change Password</li></a>

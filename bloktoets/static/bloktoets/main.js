@@ -71,22 +71,45 @@ function render_recipebooks(response, hist=true) {
 function render_table(data, onclickfunction=false, clear_main=true, where="main_view") {
     let table = document.createElement("table");
     table.className = "bt-table";
-    // Create filter, will be added to first header cell
+    // Create filter, will be added to top bar
     filter_input = document.createElement("input");
+    filter_input.id = "table_filter";
     filter_input.className = "text-input";
     filter_input.style.width = "auto";
     filter_input.style.marginLeft = "15px";
-    filter_input.placeholder = "Filter"
+    filter_input.style.marginTop = "-5px";
+    filter_input.style.height = "35px";
+    filter_input.placeholder = "Filter";
+    if (document.getElementById("table_filter")) {
+        document.getElementById("table_filter").remove();
+    }
+    document.getElementById("nav_right").prepend(filter_input);
 
     // Create headers
     let thead = table.createTHead();
     let header_row = thead.insertRow();
-    for (header in data['headers']) {
+    for (let header in data['headers']) {
         const header_cell = document.createElement("TH");
         header_cell.innerHTML = data.headers[header];
 
-        // Append filter on first (name) cell:
-        if (header == 0) {header_cell.appendChild(filter_input)};
+        // Add sorting arrows: 🔽 and 🔼
+        let down_arrow = document.createElement("span");
+        let up_arrow = document.createElement("span");
+        down_arrow.style.float = "right";
+        up_arrow.style.float = "right";
+        down_arrow.style.cursor = "pointer";
+        up_arrow.style.cursor = "pointer";
+        up_arrow.innerHTML = "&uarr;";
+        down_arrow.innerHTML = "&darr;";
+        up_arrow.onclick = function() {
+            sort_table(header, "descending")
+        }
+        down_arrow.onclick = function() {
+            sort_table(header, "ascending")
+        }
+        
+        header_cell.appendChild(up_arrow);
+        header_cell.appendChild(down_arrow);
 
         header_row.appendChild(header_cell);
     }
@@ -121,6 +144,57 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
             } else {
                 tbody.childNodes[row].style.display = "table-row";
             }          
+        }
+    }
+
+    // Sort function
+    function sort_table(column, direction) {
+        let sorting = true;
+        let should_sort = false;
+        let a,b,i;
+        while (sorting) {
+            sorting = false;    // Assume sorting is done
+            
+            // Loop through rows
+            for (i = 0; i < tbody.rows.length - 1; i++) {
+                should_sort = false;
+                a = tbody.rows[i].getElementsByTagName("TD")[column].innerHTML.toLowerCase();
+                b = tbody.rows[i+1].getElementsByTagName("TD")[column].innerHTML.toLowerCase();
+
+                // Convert numbers to float and Rand values to float (R 1.23 becomes 1.23)
+                if (!isNaN(parseFloat(a))) {
+                    a = parseFloat(a);
+                } else if (!isNaN(parseFloat(a.slice(2)))) {
+                    a = parseFloat(a.slice(2));
+                }
+                if (!isNaN(parseFloat(b))) {
+                    b = parseFloat(b);
+                } else if (!isNaN(parseFloat(b.slice(2)))) {
+                    b = parseFloat(b.slice(2));
+                }
+
+                console.log(a);
+                console.log(b);
+
+                if (direction == "ascending") {
+                    if (a > b) {
+                        should_sort = true;
+                        break;
+                    }
+                }
+                if (direction == "descending") {
+                    if (b > a) {
+                        should_sort = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Swop elements
+            if (should_sort) {
+                tbody.rows[i].parentNode.insertBefore(tbody.rows[i+1], tbody.rows[i]);
+                sorting = true;
+            }
         }
     }
     
