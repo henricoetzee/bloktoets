@@ -137,13 +137,15 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
 
     // Filter input listener
     filter_input.oninput = function() {
-        for (row in tbody.childNodes) {
-            if (!Number.isInteger(parseInt(row))) {continue}  // Skip methods in table
-            if (!tbody.childNodes[row].childNodes[0].innerHTML.toUpperCase().includes(filter_input.value.toUpperCase())) {
-                tbody.childNodes[row].style.display = "none";
-            } else {
-                tbody.childNodes[row].style.display = "table-row";
-            }          
+        for (row in tbody.childNodes) {                         // For all rows
+            if (!Number.isInteger(parseInt(row))) {continue}    // Skip methods in table
+            tbody.childNodes[row].style.display = "none";       // Hide row
+            for (cell in tbody.childNodes[row].childNodes) {       // For all cells
+                if (!Number.isInteger(parseInt(cell))) {continue}  // Skip methods in row
+                if (tbody.childNodes[row].childNodes[cell].innerHTML.toUpperCase().includes(filter_input.value.toUpperCase())) {
+                    tbody.childNodes[row].style.display = "table-row";  // Show row if text found
+                }
+            }        
         }
     }
 
@@ -206,6 +208,10 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
 
 // Render stock table
 function render_stock_table(clear_main=true, where="main_view") {
+    
+    // Remove filter from top bar.  This should be removed if a stock filter is implemented.
+    document.getElementById("table_filter").remove();
+    
     render_to = document.getElementById(where);
     if (clear_main) {render_to.innerHTML = ""};
 
