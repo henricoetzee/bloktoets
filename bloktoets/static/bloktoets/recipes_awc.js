@@ -207,7 +207,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         if (existing_item) {
             todo = "modify";
             input_name.value = response.item.name;
-            input_name.readOnly = true;
+            //input_name.readOnly = true;
             input_scale.value = response.item.scale_code;
             input_packing_qty.value = response.item.packing_qty;
             input_cost.value = response.item.cost;

@@ -164,6 +164,7 @@ def api(request):
             if (data['todo'] == 'modify'):  #-----------CHANGE PRODUCT
                 try:
                     p = Products.objects.get(id=data["id"])
+                    p.name = data["name"]
                     p.scale_code = data["scale_code"]
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])
@@ -219,6 +220,7 @@ def api(request):
             if (data['todo'] == 'modify'): #-----------CHANGE PACKAGING
                 try:
                     p = Packaging.objects.get(id=data["id"])
+                    p.name = data["name"]
                     p.scale_code = data["scale_code"]
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])
@@ -392,13 +394,13 @@ def api(request):
 #                 recipe.gross_profit = 0
 #             recipe.save()
 
-def update_pricing(what_canged, id):
+def update_pricing(what_changed, id):
     relations = False
-    if what_canged == "product":
+    if what_changed == "product":
         relations = Product_relation.objects.filter(ingredient__id=id)
-    if what_canged == "packaging":
+    if what_changed == "packaging":
         relations = Packaging_relation.objects.filter(ingredient__id=id)
-    if what_canged == "recipe":
+    if what_changed == "recipe":
         relations = Recipe_relation.objects.filter(ingredient__id=id)
     if relations != False:
         for r in relations:
