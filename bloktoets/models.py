@@ -30,12 +30,14 @@ class Products(models.Model):
     cost = models.FloatField()
     unit_price = models.FloatField()
     stock_on_hand = models.FloatField(default=00)
+    sub_dept = models.CharField(max_length=32)
 
     def serialize(self):
         return {
             "id": self.id,
             "name": self.name,
             "scale_code": self.scale_code,
+            "sub_dept": self.sub_dept,
             "packing_qty": self.packing_qty,
             "cost": self.cost,
             "unit_price": self.unit_price,
@@ -52,16 +54,18 @@ class Packaging(models.Model):
     cost = models.FloatField()
     unit_price = models.FloatField()
     stock_on_hand = models.FloatField(default=0)
+    sub_dept = models.CharField(max_length=32)
 
     def serialize(self):
         return {
             "id": self.id,
             "name": self.name,
             "scale_code": self.scale_code,
+            "sub_dept": self.sub_dept,
             "packing_qty": self.packing_qty,
             "cost": self.cost,
             "unit_price": self.unit_price,
-            "stock_on_hand": self.stock_on_hand
+            "stock_on_hand": self.stock_on_hand,
         }
     
 
@@ -74,6 +78,7 @@ class Recipe(models.Model):
     selling_price = models.FloatField()
     recipe_yield = models.FloatField()
     stock_on_hand = models.FloatField(default=0)
+    sub_dept = models.CharField(max_length=32)
     ingredients = models.ManyToManyField(
         Products,
         blank=True,
@@ -99,10 +104,11 @@ class Recipe(models.Model):
             "id": self.id,
             "name": self.name,
             "scale_code": self.scale_code,
+            "sub_dept": self.sub_dept,
             "cost_per_unit": self.cost_per_unit,
             "gross_profit": self.gross_profit,
             "unit_price": self.selling_price,
-            "stock_on_hand": self.stock_on_hand
+            "stock_on_hand": self.stock_on_hand,
         }
 
 class Recipe_relation(models.Model):

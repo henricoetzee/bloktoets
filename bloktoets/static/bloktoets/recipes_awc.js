@@ -30,6 +30,18 @@ function create_add_window_contents(t, add_window_container, existing_item=false
     input_scale.className = "text-input";
     content.appendChild(input_scale);
 
+    // Sub department input
+    let sub_dept_input_label = document.createElement("label");
+    sub_dept_input_label.className = "text-input-label";
+    sub_dept_input_label.htmlFor = "sub_dept_input";
+    sub_dept_input_label.innerHTML = "Sub. Dept.";
+    content.appendChild(sub_dept_input_label);
+    let sub_dept_input = document.createElement("input");
+    sub_dept_input.id = "sub_dept";
+    sub_dept_input.type = "text";
+    sub_dept_input.className = "text-input";
+    content.appendChild(sub_dept_input);
+
     // Split into two branches, one for recipes, and the other for
     // products and packaging
     if (t == "recipe") {
@@ -49,6 +61,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             r.selling = response.selling_price;
             r.yield = response.recipe_yield;
             r.stock_on_hand = response.stock_on_hand;
+            r.sub_dept = response.sub_dept;
             input_name.value = r.name;
             input_scale.value = r.scale_code;
         }
@@ -61,7 +74,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         let input_stock_label = document.createElement("label");
         input_stock_label.className = "text-input-label";
         input_stock_label.htmlFor = "new_stock";
-        input_stock_label.innerHTML = "Stock on hand";
+        input_stock_label.innerHTML = "Stock";
         content.appendChild(input_stock_label);
         let input_stock = document.createElement("input");
         input_stock.id = "new_cost";
@@ -127,7 +140,8 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "ingredients": r.ingredients,
                 "packaging": r.packaging,
                 "recipe_yield": r.yield,
-                "stock_on_hand": input_stock.value
+                "stock_on_hand": input_stock.value,
+                "sub_dept": sub_dept_input.value
             });
             send_data(data, "Sending recipe to server...", () => {
                 if (current_view == "stock") {
@@ -215,6 +229,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             input_checkbox.checked = response.store_visible;
             input_checkbox.disabled = true;
             input_stock.value = response.item.stock_on_hand;
+            sub_dept_input.value = response.item.sub_dept;
         }
 
         // Save button
@@ -234,7 +249,8 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "store_visible": input_checkbox.checked,
                 "store": current_store,
                 "recipe_book": current_recipebook,
-                "stock_on_hand": input_stock.value
+                "stock_on_hand": input_stock.value,
+                "sub_dept": sub_dept_input.value
             });
             recipes = null;
             if (t == "product") {f = function() {get_data("products", "Getting products...", current_store, current_recipebook)}};

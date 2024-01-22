@@ -92,7 +92,7 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
         const header_cell = document.createElement("TH");
         header_cell.innerHTML = data.headers[header];
 
-        // Add sorting arrows: 🔽 and 🔼
+        // Add sorting arrows:
         let down_arrow = document.createElement("span");
         let up_arrow = document.createElement("span");
         down_arrow.style.float = "right";

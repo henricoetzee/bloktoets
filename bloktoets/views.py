@@ -44,7 +44,7 @@ def api(request):
                 recipes = Recipe.objects.filter(recipe_book__pk=request.GET['recipebook'])
                 return JsonResponse({
                     "status": "success",
-                    "headers": ["Recipe", "Scale code", "Cost per unit", "Gross profit", "Selling price"],
+                    "headers": ["Recipe", "Scale code", "Sub dept","Cost per unit", "Gross profit", "Selling price"],
                     "data": [r.serialize() for r in recipes]
                 })
             except Exception as e:
@@ -56,7 +56,7 @@ def api(request):
                 products = Products.objects.filter(Q(recipe_book__pk=request.GET['recipebook']) | Q(store__pk=request.GET['id']))
                 return JsonResponse({
                     "status": "success",
-                    "headers": ["Product", "Scale code", "Packing qty", "Cost", "Unit cost"],
+                    "headers": ["Product", "Scale code", "Sub dept", "Packing qty", "Cost", "Unit cost"],
                     "data": [p.serialize() for p in products]
                 })
             except Exception as e:
@@ -68,7 +68,7 @@ def api(request):
                 packaging = Packaging.objects.filter(Q(recipe_book__pk=request.GET['recipebook']) | Q(store__pk=request.GET['id']))
                 return JsonResponse({
                     "status": "success",
-                    "headers": ["Packaging", "Scale code", "Packing qty", "Cost", "Unit cost"],
+                    "headers": ["Packaging", "Scale code", "Sub dept", "Packing qty", "Cost", "Unit cost"],
                     "data": [p.serialize() for p in packaging]
                 })
             except Exception as e:
@@ -116,6 +116,7 @@ def api(request):
                     "id": recipe.id,
                     "name": recipe.name,
                     "scale_code": recipe.scale_code,
+                    "sub_dept": recipe.sub_dept,
                     "recipe_ingredients": [i.serialize() for i in recipe_ingredients],
                     "product_ingredients": [i.serialize() for i in product_ingredients],
                     "packaging_ingredients": [i.serialize() for i in packaging_ingredients],
@@ -145,6 +146,7 @@ def api(request):
                     newP = Products(
                         name = data["name"],
                         scale_code = data["scale_code"],
+                        sub_dept = data["sub_dept"],
                         packing_qty = float(data["packing_qty"]),
                         cost = float(data["cost"]),
                         stock_on_hand = float(data["stock_on_hand"])
@@ -166,6 +168,7 @@ def api(request):
                     p = Products.objects.get(id=data["id"])
                     p.name = data["name"]
                     p.scale_code = data["scale_code"]
+                    p.sub_dept = data["sub_dept"]
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])
                     p.stock_on_hand = float(data["stock_on_hand"])
@@ -202,6 +205,7 @@ def api(request):
                         name = data["name"],
                         scale_code = data["scale_code"],
                         packing_qty = float(data["packing_qty"]),
+                        sub_dept = data["sub_dept"],
                         cost = float(data["cost"]),
                         stock_on_hand = float(data["stock_on_hand"])
                     )
@@ -222,6 +226,7 @@ def api(request):
                     p = Packaging.objects.get(id=data["id"])
                     p.name = data["name"]
                     p.scale_code = data["scale_code"]
+                    p.sub_dept = data["sub_dept"]
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])
                     p.stock_on_hand = float(data["stock_on_hand"])
@@ -258,6 +263,7 @@ def api(request):
                         name = data["name"],
                         recipe_book = recipe_book,
                         scale_code = data["scale_code"],
+                        sub_dept = data["sub_dept"],
                         cost_per_unit = data["cost_per_unit"],
                         selling_price = data["selling_price"],
                         recipe_yield = data["recipe_yield"],
@@ -304,6 +310,7 @@ def api(request):
                     recipe = Recipe.objects.get(id=data["id"])
                     recipe.name = data["name"]
                     recipe.scale_code = data["scale_code"]
+                    recipe.sub_dept = data["sub_dept"]
                     recipe.cost_per_unit = data["cost_per_unit"]
                     recipe.selling_price = data["selling_price"]
                     recipe.recipe_yield = data["recipe_yield"]
