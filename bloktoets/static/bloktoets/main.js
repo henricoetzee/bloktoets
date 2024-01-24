@@ -175,9 +175,6 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
                     b = parseFloat(b.slice(2));
                 }
 
-                console.log(a);
-                console.log(b);
-
                 if (direction == "ascending") {
                     if (a > b) {
                         should_sort = true;
@@ -261,8 +258,16 @@ function render_stock_table(clear_main=true, where="main_view") {
         let tbody = table.createTBody();
         let grand_total = 0.0;
         for (row in data["data"]) {
+            
             // Only render items with more than 0 stock
             if (parseFloat(data.data[row]["stock_on_hand"]) <= 0) {continue}
+
+            let cost_price = parseFloat(data.data[row]["unit_price"])
+            // Recipe's cost price is named cost_per_unit:
+            if (data.data[row]["cost_per_unit"]) {
+                cost_price = parseFloat(data.data[row]["cost_per_unit"]);
+            }
+            
 
             const new_row = tbody.insertRow();
             let id = data.data[row]["id"];
@@ -275,14 +280,15 @@ function render_stock_table(clear_main=true, where="main_view") {
 
             // Unit price cell
             new_cell = new_row.insertCell();
-            new_cell.innerHTML = zar(data.data[row]["unit_price"]);
+
+            new_cell.innerHTML = zar(cost_price);
 
             // Stock on hand
             new_cell = new_row.insertCell();
             new_cell.innerHTML = data.data[row]["stock_on_hand"];
 
             // Totals cell and calculations
-            row_cost = parseFloat(data.data[row]["unit_price"]) * parseFloat(data.data[row]["stock_on_hand"]);
+            row_cost = cost_price * parseFloat(data.data[row]["stock_on_hand"]);
             grand_total += row_cost;
             new_cell = new_row.insertCell();
             new_cell.innerHTML = zar(row_cost);

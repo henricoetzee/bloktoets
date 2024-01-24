@@ -62,6 +62,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             r.yield = response.recipe_yield;
             r.stock_on_hand = response.stock_on_hand;
             r.sub_dept = response.sub_dept;
+            sub_dept_input.value = r.sub_dept;
             input_name.value = r.name;
             input_scale.value = r.scale_code;
         }
