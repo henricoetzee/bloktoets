@@ -72,7 +72,7 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
     let table = document.createElement("table");
     table.className = "bt-table";
     // Create filter, will be added to top bar
-    filter_input = document.createElement("input");
+    let filter_input = document.createElement("input");
     filter_input.id = "table_filter";
     filter_input.className = "text-input";
     filter_input.style.width = "auto";
@@ -204,12 +204,36 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
 }
 
 // Render stock table
-function render_stock_table(clear_main=true, where="main_view") {
+function render_stock_table(clear_main=true, where="main_view", sub_dept=false) {
     
-    // Remove filter from top bar.  This should be removed if a stock filter is implemented.
-    document.getElementById("table_filter").remove();
+    // Create filter and add to top bar
+    let filter_input = document.createElement("input");
+    filter_input.id = "table_filter";
+    filter_input.className = "text-input";
+    filter_input.style.width = "auto";
+    filter_input.style.marginLeft = "15px";
+    filter_input.style.marginTop = "-5px";
+    filter_input.style.height = "35px";
+    filter_input.placeholder = "Filter by sub dept";
+    if (document.getElementById("table_filter")) {
+        document.getElementById("table_filter").remove();
+    }
+    document.getElementById("nav_right").prepend(filter_input);
+
+    // Populate filter
+    if (sub_dept) {
+        filter_input.value = sub_dept;
+    }
+
+    // Filter input listener
+    filter_input.onkeydown = function(key) {
+        if (key.key == "Enter") {
+            render_stock_table(true, "main_view", filter_input.value)
+        }
+    }
     
-    render_to = document.getElementById(where);
+    // Render variable
+    let render_to = document.getElementById(where);
     if (clear_main) {render_to.innerHTML = ""};
 
     // Create recipe header
@@ -247,7 +271,7 @@ function render_stock_table(clear_main=true, where="main_view") {
         // Create table headers
         let thead = table.createTHead();
         let header_row = thead.insertRow();
-        let headers = ["Name", "Unit price", "Stock on hand", "Total"]
+        let headers = ["Name", "Sub dept", "Unit price", "Stock on hand", "Total"]
         for (header in headers) {
             const header_cell = document.createElement("TH");
             header_cell.innerHTML = headers[header];
@@ -258,9 +282,14 @@ function render_stock_table(clear_main=true, where="main_view") {
         let tbody = table.createTBody();
         let grand_total = 0.0;
         for (row in data["data"]) {
-            
+
             // Only render items with more than 0 stock
-            if (parseFloat(data.data[row]["stock_on_hand"]) <= 0) {continue}
+            if (parseFloat(data.data[row]["stock_on_hand"]) <= 0) {continue};
+
+            //  Only render items with filtered sub_dept
+            if (sub_dept) {
+                if (sub_dept != data.data[row]["sub_dept"]) {continue};
+            }
 
             let cost_price = parseFloat(data.data[row]["unit_price"])
             // Recipe's cost price is named cost_per_unit:
@@ -277,6 +306,10 @@ function render_stock_table(clear_main=true, where="main_view") {
             // Name cell
             let new_cell = new_row.insertCell();
             new_cell.innerHTML = data.data[row]["name"];
+
+            // Sub dept cell
+            new_cell = new_row.insertCell();
+            new_cell.innerHTML = data.data[row]["sub_dept"];
 
             // Unit price cell
             new_cell = new_row.insertCell();
