@@ -149,6 +149,9 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
         }
     }
 
+    // Default sort by name
+    sort_table(0, "ascending");
+
     // Sort function
     function sort_table(column, direction) {
         let sorting = true;
