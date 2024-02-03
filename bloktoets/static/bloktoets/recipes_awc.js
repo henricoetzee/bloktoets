@@ -465,7 +465,7 @@ function render_ingredients_table(e, recipe, select_item) {
     e.appendChild(yield_input);
 
     // Divide recipe cost by yield to get cost per unit
-    recipe.cost = recipe.total_cost / recipe.yield
+    recipe.cost = (recipe.total_cost - recipe.packaging_cost) / recipe.yield + recipe.packaging_cost;
 
     // Render costs
     let costs_div = document.createElement("div");
@@ -514,7 +514,7 @@ function render_ingredients_table(e, recipe, select_item) {
         let keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Enter", "Tab", "Backspace"]
         if (keys.includes(key.key)) {
             recipe.yield = yield_input.value;
-            recipe.cost = recipe.total_cost / recipe.yield;
+            recipe.cost = (recipe.total_cost - recipe.packaging_cost) / recipe.yield + recipe.packaging_cost;
             create_costs(costs_div);
         }
     }
@@ -604,13 +604,6 @@ function render_ingredients_table(e, recipe, select_item) {
             total_qty += data[line][1];
 
             qty_input.onchange = function() {qty_changed()}
-            // Old event listener that used keyup
-            // qty_input.onkeyup = function(key) {
-            //     let keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Enter", "Tab", "Backspace"]
-            //     if (keys.includes(key.key)) {
-            //         qty_changed()
-            //     }
-            // }
 
             // Function to re-render table and alter recipe object after qty of item is changed
             function qty_changed() {

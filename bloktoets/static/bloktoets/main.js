@@ -152,52 +152,103 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
     // Default sort by name
     sort_table(0, "ascending");
 
-    // Sort function
+    // Sort function (OLD DELETE ???)
+    // function sort_table_old(column, direction) {
+    //     let sorting = true;
+    //     let should_sort = false;
+    //     let a,b,i,j=0;
+    //     while (sorting) {
+    //         sorting = false;    // Assume sorting is done
+            
+    //         // Loop through rows
+    //         for (i = j; i < tbody.rows.length - 1; i++) {
+    //             should_sort = false;
+    //             a = tbody.rows[i].getElementsByTagName("TD")[column].innerHTML.toLowerCase();
+    //             b = tbody.rows[i+1].getElementsByTagName("TD")[column].innerHTML.toLowerCase();
+
+    //             // Convert numbers to float and Rand values to float (R 1.23 becomes 1.23)
+    //             if (!isNaN(parseFloat(a))) {
+    //                 a = parseFloat(a);
+    //             } else if (!isNaN(parseFloat(a.slice(2)))) {
+    //                 a = parseFloat(a.slice(2));
+    //             }
+    //             if (!isNaN(parseFloat(b))) {
+    //                 b = parseFloat(b);
+    //             } else if (!isNaN(parseFloat(b.slice(2)))) {
+    //                 b = parseFloat(b.slice(2));
+    //             }
+
+    //             // If one of a or b is number and the other is string, convert to string
+    //             if ((!isNaN(a) && isNaN(b)) || ((isNaN(a) && !isNaN(b)))) {
+    //                 a = a.toString();
+    //                 b = b.toString();
+    //             }
+
+    //             if (direction == "ascending") {
+    //                 if (a > b) {
+    //                     should_sort = true;
+    //                     break;
+    //                 }
+    //             }
+    //             if (direction == "descending") {
+    //                 if (b > a) {
+    //                     should_sort = true;
+    //                     break;
+    //                 }
+    //             }
+    //         }
+
+    //         j = Math.max(0, i - 1);
+    //         // Swop elements
+    //         if (should_sort) {
+    //             tbody.rows[i].parentNode.insertBefore(tbody.rows[i+1], tbody.rows[i]);
+    //             sorting = true;
+    //         }
+    //     }
+    // }
+
+    // New sort function
     function sort_table(column, direction) {
-        let sorting = true;
-        let should_sort = false;
-        let a,b,i;
-        while (sorting) {
-            sorting = false;    // Assume sorting is done
-            
-            // Loop through rows
-            for (i = 0; i < tbody.rows.length - 1; i++) {
-                should_sort = false;
-                a = tbody.rows[i].getElementsByTagName("TD")[column].innerHTML.toLowerCase();
-                b = tbody.rows[i+1].getElementsByTagName("TD")[column].innerHTML.toLowerCase();
+        dir = (direction == "ascending") ? true : false
+        var getCellValue = function(tr, idx){ return tr.children[idx].innerText || tr.children[idx].textContent; }
 
-                // Convert numbers to float and Rand values to float (R 1.23 becomes 1.23)
-                if (!isNaN(parseFloat(a))) {
-                    a = parseFloat(a);
-                } else if (!isNaN(parseFloat(a.slice(2)))) {
-                    a = parseFloat(a.slice(2));
-                }
-                if (!isNaN(parseFloat(b))) {
-                    b = parseFloat(b);
-                } else if (!isNaN(parseFloat(b.slice(2)))) {
-                    b = parseFloat(b.slice(2));
-                }
+        // Returns a function responsible for sorting a specific column index 
+        // (idx = columnIndex, asc = ascending order?).
+        var comparer = function(idx, asc) { 
+            // This is used by the array.sort() function...
+            return function(a, b) { 
+                // This is a transient function, that is called straight away. 
+                // It allows passing in different order of args, based on 
+                // the ascending/descending order.
+                return function(v1, v2) {
+                    // Convert numbers to float and Rand values to float (R 1.23 becomes 1.23)
+                    if (!isNaN(parseFloat(v1))) {
+                        v1 = parseFloat(v1);
+                    } else if (!isNaN(parseFloat(v1.slice(2)))) {
+                        v1 = parseFloat(v1.slice(2));
+                    }
+                    if (!isNaN(parseFloat(v2))) {
+                        v2 = parseFloat(v2);
+                    } else if (!isNaN(parseFloat(v2.slice(2)))) {
+                        v2 = parseFloat(v2.slice(2));
+                    }
 
-                if (direction == "ascending") {
-                    if (a > b) {
-                        should_sort = true;
-                        break;
+                    // If one of a or b is number and the other is string, convert to string
+                    if ((!isNaN(v1) && isNaN(v2)) || ((isNaN(v1) && !isNaN(v2)))) {
+                        v1 = v1.toString();
+                        v2 = v2.toString();
                     }
-                }
-                if (direction == "descending") {
-                    if (b > a) {
-                        should_sort = true;
-                        break;
-                    }
-                }
+                    // sort based on a numeric or localeCompare, based on type...
+                    return (v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2)) 
+                        ? v1 - v2 
+                        : v1.toString().localeCompare(v2);
+                }(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
             }
-            
-            // Swop elements
-            if (should_sort) {
-                tbody.rows[i].parentNode.insertBefore(tbody.rows[i+1], tbody.rows[i]);
-                sorting = true;
-            }
-        }
+        };
+        // do the work...
+        Array.prototype.slice.call(tbody.querySelectorAll('tr:nth-child(n+1)'))
+            .sort(comparer(column, dir))
+            .forEach(function(tr) { tbody.appendChild(tr) });        
     }
     
     // Render

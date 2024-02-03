@@ -429,9 +429,9 @@ def update_recipe_pricing(id = False, depth=0):
         recipe.cost_per_unit += used_recipes.ingredient.cost_per_unit * used_recipes.amount
     for used_products in Product_relation.objects.filter(recipe = recipe):
         recipe.cost_per_unit += used_products.ingredient.cost / used_products.ingredient.packing_qty * used_products.amount
+    recipe.cost_per_unit /= recipe.recipe_yield
     for used_packaging in Packaging_relation.objects.filter(recipe = recipe):
         recipe.cost_per_unit += used_packaging.ingredient.cost / used_packaging.ingredient.packing_qty * used_packaging.amount
-    recipe.cost_per_unit /= recipe.recipe_yield
     if recipe.selling_price != 0:
         recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
     else:
