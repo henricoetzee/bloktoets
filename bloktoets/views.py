@@ -378,7 +378,12 @@ def api(request):
                     print(e)
                     return JsonResponse({"status": "failed", "error": "Failed to delete recipe"})
 
-
+        if (data["what"] == "pricing"):
+            try:
+                update_recipe_pricing_all()
+                return JsonResponse({"status": "success"})
+            except Exception as e:
+                return JsonResponse({"status": "failed"})
         return JsonResponse({"status": "failed", "error": "Unknown request"})
     return JsonResponse({"status": "failed", "error": "Unknown request"})
 

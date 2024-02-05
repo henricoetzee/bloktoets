@@ -78,7 +78,7 @@ function send_data(data, loading_message="Sending data...", f) {
         }
         else if (response['status'] == "failed") {show_message(response['error'], "#EC1B24")}
         else {show_message("Error may have occurred. Check data.")};
-        f();
+        if (f) {f();};
     })
     .catch(error => {
         console.error(error);
