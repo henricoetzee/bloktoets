@@ -653,6 +653,8 @@ function render_ingredients_table(e, recipe, select_item) {
         cell.innerHTML = zar(total);
         // Add to total recipe cost
         recipe.total_cost += total;
+        // Extra blank cell
+        cell = row.insertCell();
 
         // If we calculated packaging cos, add that to recipe object
         if (what == "packaging") {recipe.packaging_cost = total};

@@ -391,6 +391,7 @@ function render_stock_table(clear_main=true, where="main_view", sub_dept=false) 
         new_cell.innerHTML = "Total";
         new_cell = new_row.insertCell();
         new_cell.innerHTML = zar(grand_total);
+        new_cell = new_row.insertCell(); // Extra blank cell
 
         return table;
     }
