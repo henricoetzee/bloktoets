@@ -383,7 +383,7 @@ def api(request):
                 update_recipe_pricing_all()
                 return JsonResponse({"status": "success"})
             except Exception as e:
-                return JsonResponse({"status": "failed"})
+                return JsonResponse({"status": "failed", "error": e})
         return JsonResponse({"status": "failed", "error": "Unknown request"})
     return JsonResponse({"status": "failed", "error": "Unknown request"})
 
@@ -422,12 +422,14 @@ def update_recipe_pricing_all():
     recipes = Recipe.objects.all()
     if recipes.count() > 0:
         for r in recipes:
+            update_recipe_pricing(r.id)
             update_pricing("recipe", r.id)
 
 def update_recipe_pricing(id = False, depth=0):
 
     if depth > 50:
         return
+    
     recipe = Recipe.objects.get(id=id)
     recipe.cost_per_unit = 0
     for used_recipes in Recipe_relation.objects.filter(recipe = recipe):
@@ -442,7 +444,6 @@ def update_recipe_pricing(id = False, depth=0):
     else:
         recipe.gross_profit = 0
     recipe.save()
-
     new_recipes = Recipe_relation.objects.filter(ingredient=recipe)
     if new_recipes.count() > 0:
         for r in new_recipes:
