@@ -152,62 +152,7 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
     // Default sort by name
     sort_table(0, "ascending");
 
-    // Sort function (OLD DELETE ???)
-    // function sort_table_old(column, direction) {
-    //     let sorting = true;
-    //     let should_sort = false;
-    //     let a,b,i,j=0;
-    //     while (sorting) {
-    //         sorting = false;    // Assume sorting is done
-            
-    //         // Loop through rows
-    //         for (i = j; i < tbody.rows.length - 1; i++) {
-    //             should_sort = false;
-    //             a = tbody.rows[i].getElementsByTagName("TD")[column].innerHTML.toLowerCase();
-    //             b = tbody.rows[i+1].getElementsByTagName("TD")[column].innerHTML.toLowerCase();
-
-    //             // Convert numbers to float and Rand values to float (R 1.23 becomes 1.23)
-    //             if (!isNaN(parseFloat(a))) {
-    //                 a = parseFloat(a);
-    //             } else if (!isNaN(parseFloat(a.slice(2)))) {
-    //                 a = parseFloat(a.slice(2));
-    //             }
-    //             if (!isNaN(parseFloat(b))) {
-    //                 b = parseFloat(b);
-    //             } else if (!isNaN(parseFloat(b.slice(2)))) {
-    //                 b = parseFloat(b.slice(2));
-    //             }
-
-    //             // If one of a or b is number and the other is string, convert to string
-    //             if ((!isNaN(a) && isNaN(b)) || ((isNaN(a) && !isNaN(b)))) {
-    //                 a = a.toString();
-    //                 b = b.toString();
-    //             }
-
-    //             if (direction == "ascending") {
-    //                 if (a > b) {
-    //                     should_sort = true;
-    //                     break;
-    //                 }
-    //             }
-    //             if (direction == "descending") {
-    //                 if (b > a) {
-    //                     should_sort = true;
-    //                     break;
-    //                 }
-    //             }
-    //         }
-
-    //         j = Math.max(0, i - 1);
-    //         // Swop elements
-    //         if (should_sort) {
-    //             tbody.rows[i].parentNode.insertBefore(tbody.rows[i+1], tbody.rows[i]);
-    //             sorting = true;
-    //         }
-    //     }
-    // }
-
-    // New sort function
+    // Sort function
     function sort_table(column, direction) {
         dir = (direction == "ascending") ? true : false
         var getCellValue = function(tr, idx){ return tr.children[idx].innerText || tr.children[idx].textContent; }
