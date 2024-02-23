@@ -332,6 +332,7 @@ function render_stock_table(clear_main=true, where="main_view", sub_dept=false) 
 
         let new_cell = new_row.insertCell(); // Extra black cell
         new_cell = new_row.insertCell() // Extra blank cell
+        new_cell = new_row.insertCell() // Extra blank cell
         new_cell = new_row.insertCell();
         new_cell.innerHTML = "Total";
         new_cell = new_row.insertCell();
