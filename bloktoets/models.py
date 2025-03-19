@@ -10,6 +10,9 @@ class Store(models.Model):
             "id": self.id,
             "name": self.name
         }
+    
+    def __str__(self):
+        return self.name
 
 class RecipeBook(models.Model):
     name = models.CharField(max_length=64, blank=False)
@@ -20,11 +23,14 @@ class RecipeBook(models.Model):
             "id": self.id,
             "name": self.name,
         }
+    def __str__(self):
+        return self.store.name + " - " + self.name
 
 class Products(models.Model):
     name = models.CharField(max_length=64, blank=False)
     store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True)
     recipe_book = models.ForeignKey(RecipeBook, on_delete=models.PROTECT, null=True)
+    product_code = models.CharField(max_length=64, blank=True)
     scale_code = models.CharField(max_length=32)
     packing_qty = models.FloatField()
     cost = models.FloatField()
@@ -44,11 +50,15 @@ class Products(models.Model):
             "stock_on_hand": self.stock_on_hand
         }
     
+    def __str__(self):
+        return self.store.name + " - " + self.recipe_book.name + " - " + self.name
+    
 
 class Packaging(models.Model):
     name = models.CharField(max_length=64, blank=False)
     store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True)
     recipe_book = models.ForeignKey(RecipeBook, on_delete=models.PROTECT, null=True)
+    product_code = models.CharField(max_length=64, blank=True)
     scale_code = models.CharField(max_length=32)
     packing_qty = models.FloatField()
     cost = models.FloatField()
@@ -68,11 +78,14 @@ class Packaging(models.Model):
             "stock_on_hand": self.stock_on_hand,
         }
     
+    def __str__(self):
+        return self.store.name + " - " + self.recipe_book.name + " - " + self.name
 
 class Recipe(models.Model):
     name = models.CharField(max_length=64, blank=False)
     recipe_book = models.ForeignKey(RecipeBook, on_delete=models.PROTECT)
     scale_code = models.CharField(max_length=32)
+    product_code = models.CharField(max_length=64, blank=True)
     cost_per_unit = models.FloatField()
     gross_profit = models.FloatField()
     selling_price = models.FloatField()
@@ -110,6 +123,10 @@ class Recipe(models.Model):
             "unit_price": self.selling_price,
             "stock_on_hand": self.stock_on_hand,
         }
+    
+    def __str__(self):
+        return self.recipe_book.__str__() + self.name
+    
 
 class Recipe_relation(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="used_recipes")
