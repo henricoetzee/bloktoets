@@ -160,6 +160,19 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         content.appendChild(save_button);
 
     } else {
+        // Product code input
+        let product_code_input_label = document.createElement("label");
+        product_code_input_label.className = "text-input-label";
+        product_code_input_label.htmlFor = "new_product_code";
+        product_code_input_label.innerHTML = "Product Code";
+        content.appendChild(product_code_input_label);
+        let product_code_input = document.createElement("input");
+        product_code_input.id = "new_product_code";
+        product_code_input.type = "text";
+        product_code_input.className = "text-input";
+        content.appendChild(product_code_input);
+
+
         // Packing qty input
         let input_packing_qty_label = document.createElement("label");
         input_packing_qty_label.className = "text-input-label";
@@ -224,6 +237,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             input_name.value = response.item.name;
             //input_name.readOnly = true;
             input_scale.value = response.item.scale_code;
+            product_code_input.value = response.item.product_code;
             input_packing_qty.value = response.item.packing_qty;
             input_cost.value = response.item.cost;
             id = response.item.id;
@@ -239,12 +253,13 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         save_button.innerHTML = "Save";
         save_button.onclick = function() {
             add_window_container.remove();
-            data = JSON.stringify({
+            const data = JSON.stringify({
                 "todo": todo,
                 "what": t,
                 "id": id,
                 "name": input_name.value,
                 "scale_code": input_scale.value,
+                "product_code": product_code_input.value,
                 "packing_qty": input_packing_qty.value,
                 "cost": input_cost.value,
                 "store_visible": input_checkbox.checked,
@@ -253,7 +268,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "stock_on_hand": input_stock.value,
                 "sub_dept": sub_dept_input.value
             });
-            recipes = null;
+            // let recipes = null;
             if (t == "product") {f = function() {get_data("products", "Getting products...", current_store, current_recipebook)}};
             if (t == "packaging") {f = function() {get_data("packaging", "Getting packaging...", current_store, current_recipebook)}};
             send_data(data, "Sending new item to server...", () => {

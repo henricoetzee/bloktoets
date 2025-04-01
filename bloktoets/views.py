@@ -56,7 +56,7 @@ def api(request):
                 products = Products.objects.filter(Q(recipe_book__pk=request.GET['recipebook']) | Q(store__pk=request.GET['id']))
                 return JsonResponse({
                     "status": "success",
-                    "headers": ["Product", "Scale code", "Sub dept", "Packing qty", "Cost", "Unit cost"],
+                    "headers": ["Product", "Product Code", "Scale code", "Sub dept", "Packing qty", "Cost", "Unit cost"],
                     "data": [p.serialize() for p in products]
                 })
             except Exception as e:
@@ -68,7 +68,7 @@ def api(request):
                 packaging = Packaging.objects.filter(Q(recipe_book__pk=request.GET['recipebook']) | Q(store__pk=request.GET['id']))
                 return JsonResponse({
                     "status": "success",
-                    "headers": ["Packaging", "Scale code", "Sub dept", "Packing qty", "Cost", "Unit cost"],
+                    "headers": ["Packaging", "Product Code", "Scale code", "Sub dept", "Packing qty", "Cost", "Unit cost"],
                     "data": [p.serialize() for p in packaging]
                 })
             except Exception as e:
@@ -145,6 +145,7 @@ def api(request):
                 try:
                     newP = Products(
                         name = data["name"],
+                        product_code = data["product_code"],
                         scale_code = data["scale_code"],
                         sub_dept = data["sub_dept"],
                         packing_qty = float(data["packing_qty"]),
@@ -168,6 +169,7 @@ def api(request):
                     p = Products.objects.get(id=data["id"])
                     p.name = data["name"]
                     p.scale_code = data["scale_code"]
+                    p.product_code = data["product_code"]
                     p.sub_dept = data["sub_dept"]
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])
@@ -204,6 +206,7 @@ def api(request):
                     newP = Packaging(
                         name = data["name"],
                         scale_code = data["scale_code"],
+                        product_code = data["product_code"],
                         packing_qty = float(data["packing_qty"]),
                         sub_dept = data["sub_dept"],
                         cost = float(data["cost"]),
@@ -226,6 +229,7 @@ def api(request):
                     p = Packaging.objects.get(id=data["id"])
                     p.name = data["name"]
                     p.scale_code = data["scale_code"]
+                    p.product_code = data["product_code"]
                     p.sub_dept = data["sub_dept"]
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])

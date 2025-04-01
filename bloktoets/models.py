@@ -42,6 +42,7 @@ class Products(models.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "product_code": self.product_code,
             "scale_code": self.scale_code,
             "sub_dept": self.sub_dept,
             "packing_qty": self.packing_qty,
@@ -70,6 +71,7 @@ class Packaging(models.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "product_code": self.product_code,
             "scale_code": self.scale_code,
             "sub_dept": self.sub_dept,
             "packing_qty": self.packing_qty,
