@@ -216,16 +216,18 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         content.appendChild(input_stock);
 
         // Checkbox to check if item should be visible to whole store
+        // THIS IS CURRENTLY HIDDEN BECAUSE IT IS NOT USED
         let input_checkbox = document.createElement("input")
         input_checkbox.id = "store_visible";
         input_checkbox.type = "checkbox";
+        input_checkbox.hidden = true;
         content.appendChild(input_checkbox);
         let input_checkbox_label = document.createElement("label");
-
+/* 
         input_checkbox_label.className = "text-input-label";
         input_checkbox_label.htmlFor = "store_visible";
         input_checkbox_label.innerHTML = "Visible for whole store?";
-        content.appendChild(input_checkbox_label);
+        content.appendChild(input_checkbox_label); */
 
         // TODO? Auto update field for price per quantity???
     
