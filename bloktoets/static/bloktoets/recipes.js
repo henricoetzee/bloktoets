@@ -148,6 +148,13 @@ function render_button(button_name, button_function) {
 function render_add_window(what, existing_item = false, response = null, after_save_function) {
     let add_window_container = document.createElement("div");
     add_window_container.className = "add-window-container";
+
+    add_window_container.addEventListener("click", (click) => {
+        // Check if the background was clicked, and not one of the child elements
+        if (click.target.className == "add-window-container") {
+            add_window_container.remove()
+        }
+    });
     
     let add_window = create_add_window_contents(what, add_window_container, existing_item, response, after_save_function);
     

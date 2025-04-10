@@ -189,9 +189,12 @@ def api(request):
             if (data['todo'] == 'delete'): #-------------DELETE PRODUCT
                 try:
                     p = Products.objects.get(id=data["id"])
+                    used_in = Product_relation.objects.filter(ingredient=p)
+                    recipe_book = p.recipe_book
                     p.delete()
                     # Recalculate recipe costing
-                    update_recipe_pricing_all()
+                    if len(used_in) > 0:
+                        update_recipe_pricing_all(recipe_book)
                     return JsonResponse({"status": "success"})
                 except Exception as e:
                     print(e)
@@ -249,9 +252,12 @@ def api(request):
             if (data['todo'] == 'delete'): #-------------DELETE PACKAGING
                 try:
                     p = Packaging.objects.get(id=data["id"])
+                    recipe_book = p.recipe_book
+                    used_in = Packaging_relation.objects.filter(ingredient=p)
                     p.delete()
                     # Recalculate recipe costing
-                    update_recipe_pricing_all()
+                    if len(used_in) > 0:
+                        update_recipe_pricing_all(recipe_book)
                     return JsonResponse({"status": "success"})
                 except Exception as e:
                     print(e)
@@ -374,9 +380,12 @@ def api(request):
             if (data['todo'] == 'delete'): #-------------DELETE RECIPE
                 try:
                     r = Recipe.objects.get(id=data["id"])
+                    recipe_book = r.recipe_book
+                    used_in = Recipe_relation.objects.filter(ingredient=r)
                     r.delete()
                     # Recalculate recipe costing
-                    update_recipe_pricing_all()
+                    if len(used_in) > 0:
+                        update_recipe_pricing_all(recipe_book)
                     return JsonResponse({"status": "success"})
                 except Exception as e:
                     print(e)
@@ -422,8 +431,11 @@ def update_pricing(what_changed, id):
         for r in relations:
             update_recipe_pricing(r.recipe.id)
 
-def update_recipe_pricing_all():
-    recipes = Recipe.objects.all()
+def update_recipe_pricing_all(recipe_book=-1):
+    if recipe_book == -1:
+        recipes = Recipe.objects.all()
+    else:
+        recipes = Recipe.objects.filter(recipe_book=recipe_book)
     if recipes.count() > 0:
         for r in recipes:
             update_recipe_pricing(r.id)

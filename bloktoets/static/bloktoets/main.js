@@ -385,7 +385,7 @@ function show_popup(message, show_close_button_immediately) {
     close_button.onclick = function() {popup_container.remove();}
     document.body.appendChild(popup_container);
     if (show_close_button_immediately) {popup.appendChild(close_button)}
-    else {setTimeout(() => {popup.appendChild(close_button)},4000)};
+    //else {setTimeout(() => {popup.appendChild(close_button)},4000)};      The close button is removed when not specifically asked to show immediately
     return popup_container;
 }
 
