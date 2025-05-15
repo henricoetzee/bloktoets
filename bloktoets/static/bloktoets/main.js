@@ -118,6 +118,7 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
     for (row in data["data"]) {
         const new_row = tbody.insertRow();
         let id = data.data[row]["id"];
+
         if (onclickfunction) {new_row.onclick = function() {onclickfunction(id)}}
         for (cell in data.data[row]) {
             if (cell != "id" && cell != "stock_on_hand") {

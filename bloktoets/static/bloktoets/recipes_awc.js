@@ -344,6 +344,12 @@ function render_add_contents_window(contents, content_type, recipe) {
     add_contents_window.style.width = "fit-content";
     add_contents_window_container.appendChild(add_contents_window);
 
+    add_contents_window_container.addEventListener("keydown", (key)=> {
+        if (key.key == "Escape") {
+            add_contents_window_container.remove();
+        }
+    })
+
     // Create onclick functions
     if (content_type == "recipes") {
         onclickfunction = function(id) {
@@ -369,13 +375,26 @@ function render_add_contents_window(contents, content_type, recipe) {
 
     let table = document.createElement("table");
     table.className = "bt-table";
+
+    // Create cancel button
+    let close_button = document.createElement("button");
+    close_button.className = "button red-bg";
+    close_button.innerHTML = "Cancel";
+    close_button.onclick = function() {add_contents_window_container.remove()};
+    add_contents_window.appendChild(close_button);
+
     // Create filter input
     let thead = table.createTHead();
     let header_row = thead.insertRow();
     let header_cell = document.createElement("TH");
     let filterbox = document.createElement("input");
+    filterbox.id = "filterbox";
     filterbox.placeholder = "Filter";
     filterbox.className = "text-input";
+    // Focus om filter element
+    setTimeout(()=>{filterbox.focus()}, 200);
+
+    header_cell.style.textAlign = "center";
     header_cell.appendChild(filterbox);
     header_row.appendChild(header_cell);
     
@@ -397,6 +416,8 @@ function render_add_contents_window(contents, content_type, recipe) {
     // Add filter function when filter input change
     filterbox.oninput = function() {
         for (row in tbody.childNodes) {
+            if (!tbody.childNodes[row].childNodes)
+                continue
             if (!tbody.childNodes[row].childNodes[0].innerHTML.toUpperCase().includes(filterbox.value.toUpperCase())) {
                 tbody.childNodes[row].style.display = "none";
             } else {
@@ -404,13 +425,6 @@ function render_add_contents_window(contents, content_type, recipe) {
             }          
         }
     }
-
-    // Create cancel button
-    let close_button = document.createElement("button");
-    close_button.className = "button red-bg";
-    close_button.innerHTML = "Cancel";
-    close_button.onclick = function() {add_contents_window_container.remove()};
-    add_contents_window.appendChild(close_button);
 
     return add_contents_window_container;
 }
