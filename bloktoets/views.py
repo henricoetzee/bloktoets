@@ -179,9 +179,9 @@ def api(request):
                     p.save()
 
                     # Update recipe pricing:
-                    update_pricing("product", p.id)
+                    changes = update_pricing("product", p.id)
 
-                    return JsonResponse({"status": "success", "message": "Product updated"})
+                    return JsonResponse({"status": "success", "message": "Product updated", "changes": changes})
                 except Exception as e:
                     print(e)
                     return JsonResponse({"status": "failed", "error": "Failed to update product"})
@@ -421,6 +421,7 @@ def api(request):
 
 def update_pricing(what_changed, id):
     relations = False
+    changes = []
     if what_changed == "product":
         relations = Product_relation.objects.filter(ingredient__id=id)
     if what_changed == "packaging":
@@ -429,17 +430,20 @@ def update_pricing(what_changed, id):
         relations = Recipe_relation.objects.filter(ingredient__id=id)
     if relations != False:
         for r in relations:
-            update_recipe_pricing(r.recipe.id)
+            changes.extend(update_recipe_pricing(r.recipe.id))
+    return changes
 
 def update_recipe_pricing_all(recipe_book=-1):
+    changes = []
     if recipe_book == -1:
         recipes = Recipe.objects.all()
     else:
         recipes = Recipe.objects.filter(recipe_book=recipe_book)
     if recipes.count() > 0:
         for r in recipes:
-            update_recipe_pricing(r.id)
-            update_pricing("recipe", r.id)
+            changes.extend(update_recipe_pricing(r.id))
+            #update_pricing("recipe", r.id)
+    return changes
 
 def update_recipe_pricing(id = False, depth=0):
 
@@ -447,6 +451,10 @@ def update_recipe_pricing(id = False, depth=0):
         return
     
     recipe = Recipe.objects.get(id=id)
+    changes = [{
+        "recipe_name": recipe.name,
+        "old_price": recipe.cost_per_unit
+    }]
     recipe.cost_per_unit = 0
     for used_recipes in Recipe_relation.objects.filter(recipe = recipe):
         recipe.cost_per_unit += used_recipes.ingredient.cost_per_unit * used_recipes.amount
@@ -459,12 +467,14 @@ def update_recipe_pricing(id = False, depth=0):
         recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
     else:
         recipe.gross_profit = 0
+    changes[0]["new_price"] = recipe.cost_per_unit
+    changes[0]["new_gp"] = recipe.gross_profit
     recipe.save()
     new_recipes = Recipe_relation.objects.filter(ingredient=recipe)
     if new_recipes.count() > 0:
         for r in new_recipes:
-            update_recipe_pricing(r.recipe.id, depth + 1)
-    return
+            changes.extend(update_recipe_pricing(r.recipe.id, depth + 1))
+    return changes
     
 def find_loop(id, console_out=False, depth=0, next_id=False):
     # End if traversal goes to deep. (possible loop prevention)

@@ -73,7 +73,15 @@ function send_data(data, loading_message="Sending data...", f) {
         if (response['status'] == "success") {
             if (response['message']) {show_message(response['message'])
             }else{
-                show_message("Success")
+                show_message("Success");
+            }
+            if (response["changes"].length > 0) {
+                message = "<table><thead><tr><th><b>Recipe price changes</b></th><th><b>Old price</b></th><th><b>New price</b></th><th><b>GP</b></th><tr><thead>";
+                for (change of response["changes"]) {
+                    console.log(change)
+                    message += `<tr><td>${change.recipe_name}</td><td>${zar(change.old_price)}</td><td>${zar(change.new_price)}</td><td>${change.new_gp.toFixed(1)}%</td></tr>`;
+                }
+                show_popup(message, true);
             }
         }
         else if (response['status'] == "failed") {show_message(response['error'], "#EC1B24")}
