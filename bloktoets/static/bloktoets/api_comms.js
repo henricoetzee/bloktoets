@@ -75,7 +75,7 @@ function send_data(data, loading_message="Sending data...", f) {
             }else{
                 show_message("Success");
             }
-            if (response["changes"].length > 0) {
+            if (response["changes"] != undefined && response["changes"].length > 0) {
                 message = "<table><thead><tr><th><b>Recipe price changes</b></th><th><b>Old price</b></th><th><b>New price</b></th><th><b>GP</b></th><tr><thead>";
                 for (change of response["changes"]) {
                     console.log(change)

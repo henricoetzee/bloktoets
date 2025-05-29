@@ -194,8 +194,10 @@ def api(request):
                     p.delete()
                     # Recalculate recipe costing
                     if len(used_in) > 0:
-                        update_recipe_pricing_all(recipe_book)
-                    return JsonResponse({"status": "success"})
+                        changes = update_recipe_pricing_all(recipe_book)
+                    else:
+                        changes = []
+                    return JsonResponse({"status": "success", "changes": changes})
                 except Exception as e:
                     print(e)
                     return JsonResponse({"status": "failed", "error": "Failed to delete product"})
@@ -242,9 +244,9 @@ def api(request):
                     p.save()
 
                     # Update recipe pricing:
-                    update_pricing("packaging", p.id)
+                    changes = update_pricing("packaging", p.id)
 
-                    return JsonResponse({"status": "success", "message": "Packing updated"})
+                    return JsonResponse({"status": "success", "message": "Packing updated", "changes": changes})
                 except Exception as e:
                     print(e)
                     return JsonResponse({"status": "failed", "error": "Failed to update product"})
@@ -257,8 +259,10 @@ def api(request):
                     p.delete()
                     # Recalculate recipe costing
                     if len(used_in) > 0:
-                        update_recipe_pricing_all(recipe_book)
-                    return JsonResponse({"status": "success"})
+                        changes = update_recipe_pricing_all(recipe_book)
+                    else:
+                        changes = []
+                    return JsonResponse({"status": "success", "changes": changes})
                 except Exception as e:
                     print(e)
                     return JsonResponse({"status": "failed", "error": "Failed to delete packaging"})
@@ -369,9 +373,9 @@ def api(request):
                         return JsonResponse({"status": "failed", "error": "Recipe saved, but there is a loop in the recipe ingredients, recipe pricing cannot be updated. Please fix!"})
 
                     # Update recipe pricing:
-                    update_pricing("recipe", recipe.id)
+                    changes = update_pricing("recipe", recipe.id)
 
-                    return JsonResponse({"status": "success", "message": "Recipe changed"})
+                    return JsonResponse({"status": "success", "message": "Recipe changed", "changes": changes})
 
                 except Exception as e:
                     print(e)
@@ -385,8 +389,10 @@ def api(request):
                     r.delete()
                     # Recalculate recipe costing
                     if len(used_in) > 0:
-                        update_recipe_pricing_all(recipe_book)
-                    return JsonResponse({"status": "success"})
+                        changes = update_recipe_pricing_all(recipe_book)
+                    else:
+                        changes = []
+                    return JsonResponse({"status": "success", "changes": changes})
                 except Exception as e:
                     print(e)
                     return JsonResponse({"status": "failed", "error": "Failed to delete recipe"})
