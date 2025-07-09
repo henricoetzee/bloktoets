@@ -52,7 +52,7 @@ class Products(models.Model):
         }
     
     def __str__(self):
-        return self.store.name + " - " + self.recipe_book.name + " - " + self.name
+        return self.recipe_book.store.name + " - " + self.recipe_book.name + " - " + self.name
     
 
 class Packaging(models.Model):
@@ -81,7 +81,7 @@ class Packaging(models.Model):
         }
     
     def __str__(self):
-        return self.store.name + " - " + self.recipe_book.name + " - " + self.name
+        return self.recipe_book.store.name + " - " + self.recipe_book.name + " - " + self.name
 
 class Recipe(models.Model):
     name = models.CharField(max_length=64, blank=False)

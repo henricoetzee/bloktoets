@@ -167,6 +167,7 @@ def api(request):
             if (data['todo'] == 'modify'):  #-----------CHANGE PRODUCT
                 try:
                     p = Products.objects.get(id=data["id"])
+                    old_cost = p.cost
                     p.name = data["name"]
                     p.scale_code = data["scale_code"]
                     p.product_code = data["product_code"]
@@ -179,7 +180,10 @@ def api(request):
                     p.save()
 
                     # Update recipe pricing:
-                    changes = update_pricing("product", p.id)
+                    if old_cost != p.cost:
+                        changes = update_pricing("product", p.id)
+                    else:
+                        changes = []
 
                     return JsonResponse({"status": "success", "message": "Product updated", "changes": changes})
                 except Exception as e:
@@ -232,6 +236,7 @@ def api(request):
             if (data['todo'] == 'modify'): #-----------CHANGE PACKAGING
                 try:
                     p = Packaging.objects.get(id=data["id"])
+                    old_cost = p.cost
                     p.name = data["name"]
                     p.scale_code = data["scale_code"]
                     p.product_code = data["product_code"]
@@ -243,8 +248,11 @@ def api(request):
                         p.unit_price = float(p.cost) / float(p.packing_qty)
                     p.save()
 
-                    # Update recipe pricing:
-                    changes = update_pricing("packaging", p.id)
+                    # Update recipe pricing if price changes:
+                    if old_cost != p.cost:
+                        changes = update_pricing("packaging", p.id)
+                    else:
+                        changes = []
 
                     return JsonResponse({"status": "success", "message": "Packing updated", "changes": changes})
                 except Exception as e:
@@ -457,9 +465,12 @@ def update_recipe_pricing(id = False, depth=0):
         return
     
     recipe = Recipe.objects.get(id=id)
+    old_price = recipe.cost_per_unit
     changes = [{
+        "store": recipe.recipe_book.store.name,
+        "department": recipe.recipe_book.name,
         "recipe_name": recipe.name,
-        "old_price": recipe.cost_per_unit
+        "old_cost": recipe.cost_per_unit
     }]
     recipe.cost_per_unit = 0
     for used_recipes in Recipe_relation.objects.filter(recipe = recipe):
@@ -473,13 +484,19 @@ def update_recipe_pricing(id = False, depth=0):
         recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
     else:
         recipe.gross_profit = 0
-    changes[0]["new_price"] = recipe.cost_per_unit
+    changes[0]["new_cost"] = recipe.cost_per_unit
+    changes[0]["selling"] = recipe.selling_price
     changes[0]["new_gp"] = recipe.gross_profit
     recipe.save()
-    new_recipes = Recipe_relation.objects.filter(ingredient=recipe)
-    if new_recipes.count() > 0:
-        for r in new_recipes:
-            changes.extend(update_recipe_pricing(r.recipe.id, depth + 1))
+    # If the price changed, also change all the recipes with this as ingredient.
+    if old_price != recipe.cost_per_unit:
+        new_recipes = Recipe_relation.objects.filter(ingredient=recipe)
+        if new_recipes.count() > 0:
+            for r in new_recipes:
+                changes.extend(update_recipe_pricing(r.recipe.id, depth + 1))
+    else:
+        # The price did not change, do not return a change
+        changes = []
     return changes
     
 def find_loop(id, console_out=False, depth=0, next_id=False):
