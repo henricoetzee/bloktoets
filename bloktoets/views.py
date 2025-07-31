@@ -12,7 +12,6 @@ def index(request):
 
 @login_required
 def api(request):
-    time.sleep(2.5)
     #-------------------GET REQUESTS-------------------
     if (request.method == 'GET'):
         # Get stores
