@@ -69,7 +69,7 @@ function show_message(message, color="#F9CB40") {
             div.remove();
         }, 1000)
     }
-
+    return div
 }
 
 function capitilize_first_letter(str) {

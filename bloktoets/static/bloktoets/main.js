@@ -121,7 +121,8 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
 
         if (onclickfunction) {new_row.onclick = function() {onclickfunction(id)}}
         for (cell in data.data[row]) {
-            if (cell != "id" && cell != "stock_on_hand") {
+            // Skip certain names
+            if (cell != "id" && cell != "stock_on_hand" && cell != "used_in_recipes") {
                 const new_cell = new_row.insertCell();
                 // Render currency for certain columns:
                 if (cell == "cost" || cell == "unit_price" || cell == "cost_per_unit") {
@@ -131,6 +132,34 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
                     new_cell.innerHTML = data.data[row][cell].toFixed(1) + "%";
                 }else{
                     new_cell.innerHTML = data.data[row][cell];
+                }
+            }
+        }
+        
+        // If product or packaging, and it is not used, add yellow background and delete button
+        if (typeof(data["type"]) != "undefined") {
+            if (data["type"] == "products" || data["type"] == "packaging") {
+                if (data.data[row]["used_in_recipes"] == false) {
+                    new_row.style.backgroundColor = "LightYellow";
+                    const delete_button = new_row.insertCell();
+                    delete_button.innerHTML = "❌";
+                    const what = data["type"] == "products" ? "product" : "packaging";
+                    delete_button.addEventListener("click", (event)=>{
+                        event.stopPropagation();  //Do not send click to row onclick listener
+                        new_row.hidden = true;
+                        data = JSON.stringify({
+                        "todo": "delete",
+                        "what": what,
+                        "id": id,
+                        })
+                        send_data(data, "",(success)=>{
+                            if (success) {
+                                new_row.remove()
+                            }else{
+                                new_row.hidden = false;
+                            }
+                        }, "Deleting item...");
+                    });
                 }
             }
         }

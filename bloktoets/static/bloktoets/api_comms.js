@@ -56,8 +56,15 @@ function get_data(what, loading_message="Loading...", id=false, recipebook=false
 }
 
 //-----------------------------SEND DATA----------------------------//
-function send_data(data, loading_message="Sending data...", f) {
-    popup = show_popup(loading_message)
+function send_data(data, loading_message="Sending data...", f, notify_message="") {
+    let notification = document.createElement("div");   // Generic declaration
+    if (loading_message != "") {
+        notification = show_popup(loading_message)
+    }
+    else if (notify_message != "") {
+        notification = show_message(notify_message)
+    }
+        
     fetch("/bt_api/", {
         method: "PUT",
         headers: {
@@ -69,7 +76,7 @@ function send_data(data, loading_message="Sending data...", f) {
     })
     .then(response => response.json())
     .then(response => {
-        popup.remove();
+        notification.remove();
         if (response['status'] == "success") {
             if (response['message']) {show_message(response['message'])
             }else{
@@ -86,11 +93,11 @@ function send_data(data, loading_message="Sending data...", f) {
         }
         else if (response['status'] == "failed") {show_message(response['error'], "#EC1B24")}
         else {show_message("Error may have occurred. Check data.")};
-        if (f) {f();};
+        if (f) {f(response['status'] == "success");};
     })
     .catch(error => {
         console.error(error);
-        popup.remove();
+        notification.remove();
         show_message("Error sending data to the server");
     })
 }

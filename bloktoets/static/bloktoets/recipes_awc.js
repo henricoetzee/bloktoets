@@ -68,8 +68,11 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         }
 
         // Make window bigger and center display
-        content.style.width = "875px";
+        content.style.width = "1000px";
         content.style.textAlign = "center";
+        // Add break before sub dept
+        const break_before_sub_dept = document.createElement("br");
+        content.insertBefore(break_before_sub_dept, sub_dept_input_label);
 
         // Add stock on hand input
         let input_stock_label = document.createElement("label");
@@ -391,12 +394,14 @@ function render_add_contents_window(contents, content_type, recipe) {
     filterbox.id = "filterbox";
     filterbox.placeholder = "Filter";
     filterbox.className = "text-input";
-    // Focus om filter element
+    
+    // Focus on filter element
     setTimeout(()=>{filterbox.focus()}, 200);
 
     header_cell.style.textAlign = "center";
     header_cell.appendChild(filterbox);
     header_row.appendChild(header_cell);
+    header_row.cells[0].colSpan = 2;
     
     // Create rows
     let tbody = table.createTBody();
@@ -405,7 +410,7 @@ function render_add_contents_window(contents, content_type, recipe) {
         let id = contents.data[row]["id"];
         new_row.onclick = function() {onclickfunction(id)}
         for (cell in contents.data[row]) {
-            if (cell == "name") {
+            if (cell == "name" || cell == "product_code") {
                 const new_cell = new_row.insertCell();
                 new_cell.innerHTML = contents.data[row][cell];
             }
@@ -418,11 +423,12 @@ function render_add_contents_window(contents, content_type, recipe) {
         for (row in tbody.childNodes) {
             if (!tbody.childNodes[row].childNodes)
                 continue
-            if (!tbody.childNodes[row].childNodes[0].innerHTML.toUpperCase().includes(filterbox.value.toUpperCase())) {
-                tbody.childNodes[row].style.display = "none";
-            } else {
-                tbody.childNodes[row].style.display = "table-row";
-            }          
+            for (const string of tbody.childNodes[row].childNodes) {
+                if (string.innerHTML.toUpperCase().includes(filterbox.value.toUpperCase()))
+                    tbody.childNodes[row].style.display = "table-row"
+                else
+                    tbody.childNodes[row].style.display = "none"
+            }        
         }
     }
 
@@ -445,7 +451,7 @@ function render_ingredients_table(e, recipe, select_item) {
         e.appendChild(recipe_ingredients_header);
         let recipe_ingredients_table = document.createElement("table")
         recipe_ingredients_table.className = "bt-table";
-        let recipe_ingredients_table_header = create_headers();
+        let recipe_ingredients_table_header = create_headers(false);
         recipe_ingredients_table.appendChild(recipe_ingredients_table_header)
         // Table
         recipe_ingredients_table_body = create_body(recipe, "recipe_ingredients");
@@ -459,7 +465,7 @@ function render_ingredients_table(e, recipe, select_item) {
         e.appendChild(product_ingredients_header);
         let product_ingredients_table = document.createElement("table")
         product_ingredients_table.className = "bt-table";
-        let product_ingredients_table_header = create_headers();
+        let product_ingredients_table_header = create_headers(true);
         product_ingredients_table.appendChild(product_ingredients_table_header)
         // Table
         product_ingredients_table_body = create_body(recipe, "ingredients");
@@ -473,7 +479,7 @@ function render_ingredients_table(e, recipe, select_item) {
         e.appendChild(packaging_ingredients_header);
         let packaging_ingredients_table = document.createElement("table")
         packaging_ingredients_table.className = "bt-table";
-        let packaging_ingredients_table_header = create_headers();
+        let packaging_ingredients_table_header = create_headers(true);
         packaging_ingredients_table.appendChild(packaging_ingredients_table_header)
         // Table
         packaging_ingredients_table_body = create_body(recipe, "packaging");
@@ -581,10 +587,13 @@ function render_ingredients_table(e, recipe, select_item) {
     }
 
     // Function to create table headers
-    function create_headers() {
+    function create_headers(has_product_code) {
         let headers = document.createElement("THEAD");
         let header_row = headers.insertRow();
-        const header_names = ["Item", "Cost", "Qty", "Total", "Delete"];
+        let header_names = [];
+        if (has_product_code)
+            header_names.push("Product code");
+        header_names.push("Item", "Cost", "Qty", "Total", "Delete");
         for (h in header_names) {
             let cell = document.createElement("TH");
             cell.innerHTML = header_names[h];
@@ -612,11 +621,57 @@ function render_ingredients_table(e, recipe, select_item) {
         let total = 0.0;
         let total_qty = 0.0;
         for (line in data) {
+            let line_item = get_item(data[line][0], items)
             let row = body.insertRow();
             row.className = "recipe-ingredient-row"
+            row.style.cursor = "default"     //TODO
+            // Product Code for products and packaging
+            if (what != "recipe_ingredients") {
+                const product_code_cell = row.insertCell();
+                const product_code_input = document.createElement("input");
+                let product_code = line_item["product_code"] == "undefined" ? "" : line_item["product_code"];
+                product_code_cell.style.display = "flex";
+                product_code_input.className = "text-input";
+                product_code_input.style.width = "150px";
+                product_code_input.value = product_code;
+                product_code_cell.append(product_code_input)
+
+                product_code_input.addEventListener("input", (event)=>{
+                    if (event.target.value != product_code) {
+                        product_code_input.style.borderColor = "blue";
+                    }else{
+                        product_code_input.style.borderColor = "#157946";
+                    }
+                })
+
+                product_code_input.addEventListener("focusout", ()=>{update_product_code()})
+
+                function update_product_code() {
+                    if (product_code == product_code_input.value) {return} // Only update if value is different
+                    product_code = product_code_input.value;   // Update product code, else this update will run again even if value did not change
+                    product_code_input.style.borderColor = "#157946";
+                    data = JSON.stringify({
+                        "todo": "modify",
+                        "what": what == "packaging" ? what : "product",
+                        "id": line_item["id"],
+                        "name": line_item["name"],
+                        "scale_code": line_item["scale_code"],
+                        "product_code": product_code_input.value,
+                        "sub_dept": line_item["sub_dept"],
+                        "packing_qty": line_item["packing_qty"],
+                        "cost": line_item["cost"],
+                        "stock_on_hand": line_item["stock_on_hand"]
+                    })
+                    send_data(data, "", (success)=>{
+                        if (!success) {
+                            product_code_input.style.borderColor = "red";
+                        }
+                    }, "Updating product code...")
+                }
+            }
+
             // Name
             let cell = row.insertCell();
-            let line_item = get_item(data[line][0], items)
             cell.innerHTML = line_item["name"];
             // Cost
             cell = row.insertCell();

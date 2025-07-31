@@ -12,6 +12,7 @@ def index(request):
 
 @login_required
 def api(request):
+    time.sleep(2.5)
     #-------------------GET REQUESTS-------------------
     if (request.method == 'GET'):
         # Get stores
@@ -56,6 +57,7 @@ def api(request):
                 products = Products.objects.filter(Q(recipe_book__pk=request.GET['recipebook']) | Q(store__pk=request.GET['id']))
                 return JsonResponse({
                     "status": "success",
+                    "type": "products",
                     "headers": ["Product", "Product Code", "Scale code", "Sub dept", "Packing qty", "Cost", "Unit cost"],
                     "data": [p.serialize() for p in products]
                 })
@@ -68,6 +70,7 @@ def api(request):
                 packaging = Packaging.objects.filter(Q(recipe_book__pk=request.GET['recipebook']) | Q(store__pk=request.GET['id']))
                 return JsonResponse({
                     "status": "success",
+                    "type": "packaging",
                     "headers": ["Packaging", "Product Code", "Scale code", "Sub dept", "Packing qty", "Cost", "Unit cost"],
                     "data": [p.serialize() for p in packaging]
                 })

@@ -39,6 +39,7 @@ class Products(models.Model):
     sub_dept = models.CharField(max_length=32)
 
     def serialize(self):
+        used_in_recipes = True if Product_relation.objects.filter(ingredient=self).count() else False
         return {
             "id": self.id,
             "name": self.name,
@@ -48,7 +49,8 @@ class Products(models.Model):
             "packing_qty": self.packing_qty,
             "cost": self.cost,
             "unit_price": self.unit_price,
-            "stock_on_hand": self.stock_on_hand
+            "stock_on_hand": self.stock_on_hand,
+            "used_in_recipes": used_in_recipes
         }
     
     def __str__(self):
@@ -68,6 +70,7 @@ class Packaging(models.Model):
     sub_dept = models.CharField(max_length=32)
 
     def serialize(self):
+        used_in_recipes = True if Packaging_relation.objects.filter(ingredient=self).count() else False
         return {
             "id": self.id,
             "name": self.name,
@@ -78,6 +81,7 @@ class Packaging(models.Model):
             "cost": self.cost,
             "unit_price": self.unit_price,
             "stock_on_hand": self.stock_on_hand,
+            "used_in_recipes": used_in_recipes
         }
     
     def __str__(self):
