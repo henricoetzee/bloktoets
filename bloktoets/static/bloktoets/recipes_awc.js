@@ -420,15 +420,20 @@ function render_add_contents_window(contents, content_type, recipe) {
 
     // Add filter function when filter input change
     filterbox.oninput = function() {
-        for (row in tbody.childNodes) {
-            if (!tbody.childNodes[row].childNodes)
+        for (row of tbody.childNodes) {
+            if (!row.childNodes)
                 continue
-            for (const string of tbody.childNodes[row].childNodes) {
-                if (string.innerHTML.toUpperCase().includes(filterbox.value.toUpperCase()))
-                    tbody.childNodes[row].style.display = "table-row"
-                else
-                    tbody.childNodes[row].style.display = "none"
-            }        
+            let displayRow = false
+            for (const e of row.childNodes) {
+                if (e.innerHTML.toUpperCase().includes(filterbox.value.toUpperCase())) {
+                    displayRow = true;
+                    break
+                }
+            }
+            if (displayRow)
+                row.style.display = "table-row"
+            else
+                row.style.display = "none"
         }
     }
 
