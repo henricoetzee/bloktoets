@@ -57,11 +57,11 @@ def extenal_product_price_update(request):
                         product.save()
                         updated[code]["price_changes"].extend(update_pricing("product", product.id))
 
+                    updated[code]["old_name"] = product.name
                     # Update name, if it is different
                     if product.name != name:
                         if not code in updated:
                             updated[code] = {}
-                        updated[code]["old_name"] = product.name
                         updated[code]["new_name"] = name
                         product.name = name
                         product.save()
