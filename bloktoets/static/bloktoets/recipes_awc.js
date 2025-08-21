@@ -221,7 +221,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         uom_input.type = "text";
         uom_input.className = "text-input";
         uom_input.value = "unit";
-        if (t = "product") {
+        if (t == "product") {
             content.append(uom_input_label, uom_input);
         }
         uom_input.addEventListener("input", ()=>{update_cost_per_unit()});

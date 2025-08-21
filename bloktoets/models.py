@@ -84,7 +84,7 @@ class Packaging(models.Model):
             "unit_price": self.unit_price,
             "stock_on_hand": self.stock_on_hand,
             "used_in_recipes": used_in_recipes,
-            "unit_of_measure": "N/A"
+            "unit_of_measure": "unit"
         }
     
     def __str__(self):
