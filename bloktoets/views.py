@@ -152,7 +152,8 @@ def api(request):
                         sub_dept = data["sub_dept"],
                         packing_qty = float(data["packing_qty"]),
                         cost = float(data["cost"]),
-                        stock_on_hand = float(data["stock_on_hand"])
+                        stock_on_hand = float(data["stock_on_hand"]),
+                        unit_of_measure = data["unit_of_measure"]
                     )
                     if (newP.packing_qty != 0):
                         newP.unit_price = newP.cost / newP.packing_qty
@@ -177,6 +178,7 @@ def api(request):
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])
                     p.stock_on_hand = float(data["stock_on_hand"])
+                    p.unit_of_measure = data["unit_of_measure"]
                     if (p.packing_qty != 0):
                         p.unit_price = float(p.cost) / float(p.packing_qty)
                     p.save()

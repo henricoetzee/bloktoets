@@ -276,17 +276,28 @@ input:autofill {
     min-width: 400px;
     /* box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); */
 }
-.bt-table thead tr {
+.bt-table thead {
+    background-color: white;
+}
+.bt-table thead th {
     /* background-color: #157946; */
+    position: sticky;
+    top: 35px;
+    background-color: white;
     color: #000000;
     text-align: left;
-    border-bottom: solid 3px #157946;
+    box-shadow: 0 3px 0 #157946;
+    z-index: 3;
 }
 .bt-table th,
 .bt-table td {
     padding: 12px 15px;
 }
-.bt-table tbody tr {
+/* .bt-table tbody {
+    position: relative;
+    top: 50px;
+} */
+.bt-table tbody td {
     border-bottom: 1px solid #dddddd;
 }
 
@@ -294,9 +305,9 @@ input:autofill {
     background-color: #f3f3f3;
 } */
 
-.bt-table tbody tr:last-of-type {
+/* .bt-table tbody tr:last-of-type {
     border-bottom: 2px solid #157946;
-}
+} */
 .bt-table tbody tr:hover {
     cursor: pointer;
     background-color: rgb(245, 245, 245);
@@ -328,9 +339,18 @@ input:autofill {
     background-color: white;
     border-radius: 15px;
     box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.5);
+    position: relative;
 }
-
-
+.window-close-button {
+    width: 25px;
+    height: 25px;
+    background-color: red;
+    position: fixed;
+    border-radius: 15px;
+    text-align: center;
+    cursor: pointer;
+    z-index: 1;
+}
 
 /* Recipe totals */
 .recipe-totals{

@@ -37,6 +37,7 @@ class Products(models.Model):
     unit_price = models.FloatField()
     stock_on_hand = models.FloatField(default=00)
     sub_dept = models.CharField(max_length=32)
+    unit_of_measure = models.CharField(max_length=32, default="unit")
 
     def serialize(self):
         used_in_recipes = True if Product_relation.objects.filter(ingredient=self).count() else False
@@ -50,7 +51,8 @@ class Products(models.Model):
             "cost": self.cost,
             "unit_price": self.unit_price,
             "stock_on_hand": self.stock_on_hand,
-            "used_in_recipes": used_in_recipes
+            "used_in_recipes": used_in_recipes,
+            "unit_of_measure": self.unit_of_measure
         }
     
     def __str__(self):
@@ -81,7 +83,8 @@ class Packaging(models.Model):
             "cost": self.cost,
             "unit_price": self.unit_price,
             "stock_on_hand": self.stock_on_hand,
-            "used_in_recipes": used_in_recipes
+            "used_in_recipes": used_in_recipes,
+            "unit_of_measure": "N/A"
         }
     
     def __str__(self):

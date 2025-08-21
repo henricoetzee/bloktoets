@@ -6,6 +6,21 @@ function create_add_window_contents(t, add_window_container, existing_item=false
     let content = document.createElement("div");
     content.className = "add-window";
 
+    // Add close button
+    const window_close_button = document.createElement("div");
+    window_close_button.className = "window-close-button";
+    window_close_button.innerHTML = "X";
+    window_close_button.addEventListener("click", ()=>{add_window_container.remove()})
+    add_window_container.append(window_close_button);
+    // Observe window changes so that the close button move with the window
+    const observer = new ResizeObserver(entries => {
+        rect = content.getBoundingClientRect();
+        window_close_button.style.top = rect.top - 10;
+        window_close_button.style.left = rect.right - 12;
+    })
+    observer.observe(content);
+    observer.observe(document.body);
+
     // Name input - common in all three models
     let input_name_label = document.createElement("label");
     input_name_label.className = "text-input-label";
@@ -163,6 +178,12 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         content.appendChild(save_button);
 
     } else {
+        content.style.textAlign = "right";
+        content.style.display = "grid";
+        content.style.gridTemplateColumns = "1fr 1fr";
+        content.style.width = "fit-content";
+        content.style.alignItems = "center";
+
         // Product code input
         let product_code_input_label = document.createElement("label");
         product_code_input_label.className = "text-input-label";
@@ -177,31 +198,64 @@ function create_add_window_contents(t, add_window_container, existing_item=false
 
 
         // Packing qty input
-        let input_packing_qty_label = document.createElement("label");
+        const input_packing_qty_label = document.createElement("label");
         input_packing_qty_label.className = "text-input-label";
         input_packing_qty_label.htmlFor = "new_packing_qty";
         input_packing_qty_label.innerHTML = "Packing quantity";
         content.appendChild(input_packing_qty_label);
-        let input_packing_qty = document.createElement("input");
+        const input_packing_qty = document.createElement("input");
         input_packing_qty.id = "new_packing_qty";
         input_packing_qty.type = "number";
         input_packing_qty.min = 1;
         input_packing_qty.className = "text-input";
         content.appendChild(input_packing_qty);
+        input_packing_qty.addEventListener("input", ()=>{update_cost_per_unit()});
+
+        // Unit of measure input (Only for products)
+        const uom_input_label = document.createElement("label");
+        uom_input_label.className = "text-input-label";
+        uom_input_label.htmlFor = "unit_of_measure";
+        uom_input_label.innerHTML = "Unit of measure";
+        const uom_input = document.createElement("input");
+        uom_input.id = "unit_of_measure";
+        uom_input.type = "text";
+        uom_input.className = "text-input";
+        uom_input.value = "unit";
+        if (t = "product") {
+            content.append(uom_input_label, uom_input);
+        }
+        uom_input.addEventListener("input", ()=>{update_cost_per_unit()});
 
         // Cost
-        let input_cost_label = document.createElement("label");
+        const input_cost_label = document.createElement("label");
         input_cost_label.className = "text-input-label";
         input_cost_label.htmlFor = "new_cost";
         input_cost_label.innerHTML = "Cost";
         content.appendChild(input_cost_label);
-        let input_cost = document.createElement("input");
+        const input_cost = document.createElement("input");
         input_cost.id = "new_cost";
         input_cost.type = "number";
         input_cost.min = 0;
         input_cost.step = 0.01;
         input_cost.className = "text-input";
         content.appendChild(input_cost);
+        input_cost.addEventListener("input", ()=> {update_cost_per_unit()});
+
+        // Cost per unit
+        const cost_per_unit_label = document.createElement("label");
+        cost_per_unit_label.className = "text-input-label";
+        cost_per_unit_label.htmlFor = "cost_per_unit";
+        cost_per_unit_label.innerHTML = "Cost per unit"
+        const cost_per_unit = document.createElement("div");
+        cost_per_unit.id = "cost_per_unit";
+        cost_per_unit.style.fontSize = "medium";
+        cost_per_unit.style.paddingRight = "10px";
+        function update_cost_per_unit() {
+            if (input_packing_qty.value > 0) {
+                cost_per_unit.innerHTML = zar(input_cost.value / input_packing_qty.value) + " per " + uom_input.value;
+            }
+        }
+        content.append(cost_per_unit_label, cost_per_unit);
 
         // Stock on hand
         let input_stock_label = document.createElement("label");
@@ -240,7 +294,6 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         if (existing_item) {
             todo = "modify";
             input_name.value = response.item.name;
-            //input_name.readOnly = true;
             input_scale.value = response.item.scale_code;
             product_code_input.value = response.item.product_code;
             input_packing_qty.value = response.item.packing_qty;
@@ -250,6 +303,8 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             input_checkbox.disabled = true;
             input_stock.value = response.item.stock_on_hand;
             sub_dept_input.value = response.item.sub_dept;
+            uom_input.value = response.item.unit_of_measure;
+            update_cost_per_unit();
         }
 
         // Save button
@@ -271,7 +326,8 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "store": current_store,
                 "recipe_book": current_recipebook,
                 "stock_on_hand": input_stock.value,
-                "sub_dept": sub_dept_input.value
+                "sub_dept": sub_dept_input.value,
+                "unit_of_measure": uom_input.value
             });
             // let recipes = null;
             if (t == "product") {f = function() {get_data("products", "Getting products...", current_store, current_recipebook)}};
@@ -352,6 +408,21 @@ function render_add_contents_window(contents, content_type, recipe) {
             add_contents_window_container.remove();
         }
     })
+
+    // Add close button
+    const window_close_button = document.createElement("div");
+    window_close_button.className = "window-close-button";
+    window_close_button.innerHTML = "X";
+    window_close_button.addEventListener("click", ()=>{add_contents_window_container.remove()})
+    add_contents_window_container.append(window_close_button);
+    // Observe window changes so that the close button move with the window
+    const observer = new ResizeObserver(entries => {
+        rect = add_contents_window.getBoundingClientRect();
+        window_close_button.style.top = rect.top - 10;
+        window_close_button.style.left = rect.right - 12;
+    })
+    observer.observe(add_contents_window);
+    observer.observe(document.body);
 
     // Create onclick functions
     if (content_type == "recipes") {
@@ -704,9 +775,19 @@ function render_ingredients_table(e, recipe, select_item) {
                 render_ingredients_table(e, recipe, what + line_item["id"]);
             }
 
-
             line_total *= data[line][1];
-            cell.appendChild(qty_input);
+            cell.append(qty_input);
+
+            // Unit of measure for qty input, if products
+            if (what == "ingredients") {
+                uom_div = document.createElement("div");
+                uom_div.innerHTML = line_item["unit_of_measure"];
+                cell.style.display = "grid";
+                cell.style.gridTemplateColumns = "1fr 1fr";
+                cell.style.alignItems = "center";
+                cell.style.gridColumnGap = "8px";
+                cell.append(uom_div);
+            }
             qty_input.onchange = function() {qty_changed();}
             // Line total
             cell = row.insertCell();

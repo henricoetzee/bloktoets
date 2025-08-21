@@ -54,14 +54,15 @@ def extenal_product_price_update(request):
                             }
                         product.cost = price
                         product.unit_price = price / product.packing_qty
+                        updated[code]["old_name"] = product.name        # So that we can see the name in the email. Name will not be shown if name is not updated.
                         product.save()
                         updated[code]["price_changes"].extend(update_pricing("product", product.id))
 
-                    updated[code]["old_name"] = product.name
                     # Update name, if it is different
                     if product.name != name:
                         if not code in updated:
                             updated[code] = {}
+                        updated[code]["old_name"] = product.name
                         updated[code]["new_name"] = name
                         product.name = name
                         product.save()
