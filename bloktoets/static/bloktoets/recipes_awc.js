@@ -723,8 +723,9 @@ function render_ingredients_table(e, recipe, select_item) {
                 product_code_input.addEventListener("focusout", ()=>{update_product_code()})
 
                 function update_product_code() {
-                    if (product_code == product_code_input.value) {return} // Only update if value is different
-                    product_code = product_code_input.value;   // Update product code, else this update will run again even if value did not change
+                    if (product_code == product_code_input.value) {return}  // Only update if value is different
+                    product_code = product_code_input.value;                // Update product code, else this update will run again even if value did not change
+                    line_item["product_code"] = product_code               // Update local data
                     product_code_input.style.borderColor = "#157946";
                     data = JSON.stringify({
                         "todo": "modify",
