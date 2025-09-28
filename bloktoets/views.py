@@ -57,7 +57,7 @@ def api(request):
                 return JsonResponse({
                     "status": "success",
                     "type": "products",
-                    "headers": ["Product", "Product Code", "Scale code", "Sub dept", "Packing qty", "Cost", "Unit cost"],
+                    "headers": ["Product", "Product Code", "Scale code", "Sub dept", "Packing qty", "Sigma cost", "Unit cost"],
                     "data": [p.serialize() for p in products]
                 })
             except Exception as e:
@@ -70,7 +70,7 @@ def api(request):
                 return JsonResponse({
                     "status": "success",
                     "type": "packaging",
-                    "headers": ["Packaging", "Product Code", "Scale code", "Sub dept", "Packing qty", "Cost", "Unit cost"],
+                    "headers": ["Packaging", "Product Code", "Scale code", "Sub dept", "Packing qty", "Sigma cost", "Unit cost"],
                     "data": [p.serialize() for p in packaging]
                 })
             except Exception as e:
@@ -153,10 +153,12 @@ def api(request):
                         packing_qty = float(data["packing_qty"]),
                         cost = float(data["cost"]),
                         stock_on_hand = float(data["stock_on_hand"]),
-                        unit_of_measure = data["unit_of_measure"]
+                        unit_of_measure = data["unit_of_measure"],
+                        supplier_product_code = data["supplier_product_code"],
+                        volume = float(data["volume"])
                     )
-                    if (newP.packing_qty != 0):
-                        newP.unit_price = newP.cost / newP.packing_qty
+                    if (newP.volume != 0):
+                        newP.unit_price = newP.cost / newP.volume
                     if (data["store_visible"]):
                         newP.store = Store.objects.get(id=data["store"])
                     else:
@@ -179,8 +181,10 @@ def api(request):
                     p.cost = float(data["cost"])
                     p.stock_on_hand = float(data["stock_on_hand"])
                     p.unit_of_measure = data["unit_of_measure"]
-                    if (p.packing_qty != 0):
-                        p.unit_price = float(p.cost) / float(p.packing_qty)
+                    p.supplier_product_code = data["supplier_product_code"]
+                    p.volume = data["volume"]
+                    if (p.volume != 0):
+                        p.unit_price = float(p.cost) / float(p.volume)
                     p.save()
 
                     # Update recipe pricing:
@@ -198,13 +202,16 @@ def api(request):
                 try:
                     p = Products.objects.get(id=data["id"])
                     used_in = Product_relation.objects.filter(ingredient=p)
-                    recipe_book = p.recipe_book
-                    p.delete()
-                    # Recalculate recipe costing
+                    
+                    # Recalculate recipe costing. Set unit price to 0 temporarily to calculate new pricing
+                    p.unit_price = 0
+                    p.save()
                     if len(used_in) > 0:
-                        changes = update_recipe_pricing_all(recipe_book)
+                        changes = update_pricing("product", p.id)
                     else:
                         changes = []
+                    
+                    p.delete()
                     return JsonResponse({"status": "success", "changes": changes})
                 except Exception as e:
                     print(e)
@@ -223,10 +230,10 @@ def api(request):
                         packing_qty = float(data["packing_qty"]),
                         sub_dept = data["sub_dept"],
                         cost = float(data["cost"]),
-                        stock_on_hand = float(data["stock_on_hand"])
+                        stock_on_hand = float(data["stock_on_hand"]),
+                        supplier_product_code = data["supplier_product_code"]
                     )
-                    if (newP.packing_qty != 0):
-                        newP.unit_price = newP.cost / newP.packing_qty
+                    newP.unit_price = newP.cost
                     if (data["store_visible"]):
                         newP.store = Store.objects.get(id=data["store"])
                     else:
@@ -248,8 +255,8 @@ def api(request):
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])
                     p.stock_on_hand = float(data["stock_on_hand"])
-                    if (p.packing_qty != 0):
-                        p.unit_price = float(p.cost) / float(p.packing_qty)
+                    p.supplier_product_code = data["supplier_product_code"]
+                    p.unit_price = p.cost
                     p.save()
 
                     # Update recipe pricing if price changes:
@@ -266,14 +273,17 @@ def api(request):
             if (data['todo'] == 'delete'): #-------------DELETE PACKAGING
                 try:
                     p = Packaging.objects.get(id=data["id"])
-                    recipe_book = p.recipe_book
                     used_in = Packaging_relation.objects.filter(ingredient=p)
-                    p.delete()
-                    # Recalculate recipe costing
+                    
+                    # Recalculate recipe costing Set unit price to 0 temporarily to calculate new pricing
+                    p.unit_price = 0
+                    p.save()
                     if len(used_in) > 0:
-                        changes = update_recipe_pricing_all(recipe_book)
+                        changes = update_pricing("packaging", p.id)
                     else:
                         changes = []
+
+                    p.delete()
                     return JsonResponse({"status": "success", "changes": changes})
                 except Exception as e:
                     print(e)
@@ -398,12 +408,16 @@ def api(request):
                     r = Recipe.objects.get(id=data["id"])
                     recipe_book = r.recipe_book
                     used_in = Recipe_relation.objects.filter(ingredient=r)
-                    r.delete()
+                    
                     # Recalculate recipe costing
+                    r.cost_per_unit = 0
+                    r.save()
                     if len(used_in) > 0:
-                        changes = update_recipe_pricing_all(recipe_book)
+                        changes = update_pricing("recipe", r.id)
                     else:
                         changes = []
+                    
+                    r.delete()
                     return JsonResponse({"status": "success", "changes": changes})
                 except Exception as e:
                     print(e)
@@ -480,10 +494,10 @@ def update_recipe_pricing(id = False, depth=0):
     for used_recipes in Recipe_relation.objects.filter(recipe = recipe):
         recipe.cost_per_unit += used_recipes.ingredient.cost_per_unit * used_recipes.amount
     for used_products in Product_relation.objects.filter(recipe = recipe):
-        recipe.cost_per_unit += used_products.ingredient.cost / used_products.ingredient.packing_qty * used_products.amount
+        recipe.cost_per_unit += used_products.ingredient.unit_price * used_products.amount
     recipe.cost_per_unit /= recipe.recipe_yield
     for used_packaging in Packaging_relation.objects.filter(recipe = recipe):
-        recipe.cost_per_unit += used_packaging.ingredient.cost / used_packaging.ingredient.packing_qty * used_packaging.amount
+        recipe.cost_per_unit += used_packaging.ingredient.unit_price * used_packaging.amount
     if recipe.selling_price != 0:
         recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
     else:

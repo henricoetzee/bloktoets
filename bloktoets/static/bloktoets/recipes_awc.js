@@ -185,17 +185,28 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         content.style.alignItems = "center";
 
         // Product code input
-        let product_code_input_label = document.createElement("label");
+        const product_code_input_label = document.createElement("label");
         product_code_input_label.className = "text-input-label";
         product_code_input_label.htmlFor = "new_product_code";
         product_code_input_label.innerHTML = "Product Code";
         content.appendChild(product_code_input_label);
-        let product_code_input = document.createElement("input");
+        const product_code_input = document.createElement("input");
         product_code_input.id = "new_product_code";
         product_code_input.type = "text";
         product_code_input.className = "text-input";
         content.appendChild(product_code_input);
 
+        // Supplier product code input
+        const supplier_product_code_input_label = document.createElement("label");
+        supplier_product_code_input_label.className = "text-input-label";
+        supplier_product_code_input_label.htmlFor = "new_supplier_product_code";
+        supplier_product_code_input_label.innerHTML = "Supplier product Code";
+        content.appendChild(supplier_product_code_input_label);
+        const supplier_product_code_input = document.createElement("input");
+        supplier_product_code_input.id = "new_supplier_product_code";
+        supplier_product_code_input.type = "text";
+        supplier_product_code_input.className = "text-input";
+        content.appendChild(supplier_product_code_input);
 
         // Packing qty input
         const input_packing_qty_label = document.createElement("label");
@@ -211,6 +222,20 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         content.appendChild(input_packing_qty);
         input_packing_qty.addEventListener("input", ()=>{update_cost_per_unit()});
 
+        // Volume input (Only for products)
+        const volume_input_label = document.createElement("label");
+        volume_input_label.className = "text-input-label";
+        volume_input_label.htmlFor = "volume_input";
+        volume_input_label.innerHTML = "Volume<br>2L milk box, 0.75L tomato sauce bottle, etc.";
+        const volume_input = document.createElement("input");
+        volume_input.id = "unit_of_measure";
+        volume_input.type = "number";
+        volume_input.min = 0;
+        volume_input.step = 0.01;
+        volume_input.className = "text-input";
+        volume_input.value = "unit";
+        volume_input.addEventListener("input", ()=> {update_cost_per_unit()});
+
         // Unit of measure input (Only for products)
         const uom_input_label = document.createElement("label");
         uom_input_label.className = "text-input-label";
@@ -222,7 +247,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         uom_input.className = "text-input";
         uom_input.value = "unit";
         if (t == "product") {
-            content.append(uom_input_label, uom_input);
+            content.append(volume_input_label, volume_input, uom_input_label, uom_input);
         }
         uom_input.addEventListener("input", ()=>{update_cost_per_unit()});
 
@@ -241,6 +266,17 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         content.appendChild(input_cost);
         input_cost.addEventListener("input", ()=> {update_cost_per_unit()});
 
+        // Packing cost
+        const cost_per_package_label = document.createElement("label");
+        cost_per_package_label.className = "text-input-label";
+        cost_per_package_label.htmlFor = "cost_per_package";
+        cost_per_package_label.innerHTML = "Cost per package"
+        const cost_per_package = document.createElement("div");
+        cost_per_package.id = "cost_per_package";
+        cost_per_package.style.fontSize = "medium";
+        cost_per_package.style.paddingRight = "10px";
+        content.append(cost_per_package_label, cost_per_package);
+
         // Cost per unit
         const cost_per_unit_label = document.createElement("label");
         cost_per_unit_label.className = "text-input-label";
@@ -250,12 +286,18 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         cost_per_unit.id = "cost_per_unit";
         cost_per_unit.style.fontSize = "medium";
         cost_per_unit.style.paddingRight = "10px";
-        function update_cost_per_unit() {
-            if (input_packing_qty.value > 0) {
-                cost_per_unit.innerHTML = zar(input_cost.value / input_packing_qty.value) + " per " + uom_input.value;
-            }
+        if (t == "product") {
+            content.append(cost_per_unit_label, cost_per_unit);
         }
-        content.append(cost_per_unit_label, cost_per_unit);
+
+        function update_cost_per_unit() {
+            // Only update cost per unit for products and if volume > 0
+            if (volume_input.value > 0 && t == "product") {
+                cost_per_unit.innerHTML = zar(input_cost.value / volume_input.value) + " per " + uom_input.value;
+            }
+            cost_per_package.innerHTML = zar(input_cost.value * input_packing_qty.value);
+        }
+
 
         // Stock on hand
         let input_stock_label = document.createElement("label");
@@ -304,6 +346,8 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             input_stock.value = response.item.stock_on_hand;
             sub_dept_input.value = response.item.sub_dept;
             uom_input.value = response.item.unit_of_measure;
+            volume_input.value = response.item.volume;
+            supplier_product_code_input.value = response.item.supplier_product_code;
             update_cost_per_unit();
         }
 
@@ -327,7 +371,9 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "recipe_book": current_recipebook,
                 "stock_on_hand": input_stock.value,
                 "sub_dept": sub_dept_input.value,
-                "unit_of_measure": uom_input.value
+                "unit_of_measure": uom_input.value,
+                "volume": volume_input.value,
+                "supplier_product_code": supplier_product_code_input.value
             });
             // let recipes = null;
             if (t == "product") {f = function() {get_data("products", "Getting products...", current_store, current_recipebook)}};
@@ -522,15 +568,15 @@ function render_ingredients_table(e, recipe, select_item) {
     // ----------RECIPE INGREDIENTS----------------
     // Title and table header
     if (recipe.recipe_ingredients.length > 0) {
-        let recipe_ingredients_header = document.createElement("h3");
+        const recipe_ingredients_header = document.createElement("h3");
         recipe_ingredients_header.innerHTML = "Recipe Ingrediens:";
         e.appendChild(recipe_ingredients_header);
-        let recipe_ingredients_table = document.createElement("table")
+        const recipe_ingredients_table = document.createElement("table")
         recipe_ingredients_table.className = "bt-table";
-        let recipe_ingredients_table_header = create_headers(false);
+        const recipe_ingredients_table_header = create_headers(false);
         recipe_ingredients_table.appendChild(recipe_ingredients_table_header)
         // Table
-        recipe_ingredients_table_body = create_body(recipe, "recipe_ingredients");
+        const recipe_ingredients_table_body = create_body(recipe, "recipe_ingredients");
         recipe_ingredients_table.appendChild(recipe_ingredients_table_body);
         e.appendChild(recipe_ingredients_table);
     }
@@ -663,16 +709,17 @@ function render_ingredients_table(e, recipe, select_item) {
     }
 
     // Function to create table headers
-    function create_headers(has_product_code) {
+    function create_headers(has_product_code, scrollable_headers=true) {
         let headers = document.createElement("THEAD");
         let header_row = headers.insertRow();
         let header_names = [];
         if (has_product_code)
             header_names.push("Product code");
         header_names.push("Item", "Cost", "Qty", "Total", "Delete");
-        for (h in header_names) {
-            let cell = document.createElement("TH");
-            cell.innerHTML = header_names[h];
+        for (const header_name of header_names) {
+            const cell = document.createElement("TH");
+            cell.style.position = "inherit";
+            cell.innerHTML = header_name;
             header_row.appendChild(cell);
         }
         return headers;
@@ -782,13 +829,7 @@ function render_ingredients_table(e, recipe, select_item) {
 
             // Unit of measure for qty input, if products
             if (what == "ingredients") {
-                uom_div = document.createElement("div");
-                uom_div.innerHTML = line_item["unit_of_measure"];
-                cell.style.display = "grid";
-                cell.style.gridTemplateColumns = "1fr 1fr";
-                cell.style.alignItems = "center";
-                cell.style.gridColumnGap = "8px";
-                cell.append(uom_div);
+                cell.append(" " + line_item["unit_of_measure"]);
             }
             qty_input.onchange = function() {qty_changed();}
             // Line total
@@ -814,8 +855,9 @@ function render_ingredients_table(e, recipe, select_item) {
         // TOTAL ROW
         let row = body.insertRow();
         row.style.fontWeight = "bold";
-        // One blank cells for total row
+        // Two blank cells for total row
         let cell = row.insertCell();
+        row.insertCell();
         // Total label cell
         cell = row.insertCell();
         cell.innerHTML = "Total";

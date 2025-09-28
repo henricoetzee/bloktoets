@@ -37,7 +37,9 @@ class Products(models.Model):
     unit_price = models.FloatField()
     stock_on_hand = models.FloatField(default=00)
     sub_dept = models.CharField(max_length=32)
+    volume = models.FloatField()
     unit_of_measure = models.CharField(max_length=32, default="unit")
+    supplier_product_code = models.CharField(max_length=64, blank=True)
 
     def serialize(self):
         used_in_recipes = True if Product_relation.objects.filter(ingredient=self).count() else False
@@ -52,7 +54,9 @@ class Products(models.Model):
             "unit_price": self.unit_price,
             "stock_on_hand": self.stock_on_hand,
             "used_in_recipes": used_in_recipes,
-            "unit_of_measure": self.unit_of_measure
+            "unit_of_measure": self.unit_of_measure,
+            "supplier_product_code": self.supplier_product_code,
+            "volume": self.volume
         }
     
     def __str__(self):
@@ -70,6 +74,7 @@ class Packaging(models.Model):
     unit_price = models.FloatField()
     stock_on_hand = models.FloatField(default=0)
     sub_dept = models.CharField(max_length=32)
+    supplier_product_code = models.CharField(max_length=64, blank=True)
 
     def serialize(self):
         used_in_recipes = True if Packaging_relation.objects.filter(ingredient=self).count() else False
@@ -84,7 +89,8 @@ class Packaging(models.Model):
             "unit_price": self.unit_price,
             "stock_on_hand": self.stock_on_hand,
             "used_in_recipes": used_in_recipes,
-            "unit_of_measure": "unit"
+            "unit_of_measure": "unit",
+            "supplier_product_code": self.supplier_product_code
         }
     
     def __str__(self):
