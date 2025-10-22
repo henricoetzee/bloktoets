@@ -107,6 +107,7 @@ class Recipe(models.Model):
     recipe_yield = models.FloatField()
     stock_on_hand = models.FloatField(default=0)
     sub_dept = models.CharField(max_length=32)
+    unit_of_measure = models.CharField(max_length=32, default="units")
     ingredients = models.ManyToManyField(
         Products,
         blank=True,
@@ -137,6 +138,7 @@ class Recipe(models.Model):
             "gross_profit": self.gross_profit,
             "unit_price": self.selling_price,
             "stock_on_hand": self.stock_on_hand,
+            "unit_of_measure": self.unit_of_measure
         }
     
     def __str__(self):

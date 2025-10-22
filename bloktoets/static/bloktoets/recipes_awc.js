@@ -77,6 +77,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             r.yield = response.recipe_yield;
             r.stock_on_hand = response.stock_on_hand;
             r.sub_dept = response.sub_dept;
+            r.unit_of_measure = response.unit_of_measure;
             sub_dept_input.value = r.sub_dept;
             input_name.value = r.name;
             input_scale.value = r.scale_code;
@@ -160,7 +161,8 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "packaging": r.packaging,
                 "recipe_yield": r.yield,
                 "stock_on_hand": input_stock.value,
-                "sub_dept": sub_dept_input.value
+                "sub_dept": sub_dept_input.value,
+                "unit_of_measure": r.unit_of_measure
             });
             send_data(data, "Sending recipe to server...", () => {
                 if (current_view == "stock") {
@@ -609,54 +611,64 @@ function render_ingredients_table(e, recipe, select_item) {
         e.appendChild(packaging_ingredients_table);
     }
 
+    const costs_div = document.createElement("div");
+    e.appendChild(costs_div);
+
     // Add yield input and label
-    let yield_input_label = document.createElement("label");
+    const yield_input_div = document.createElement("div");
+    const yield_input_label = document.createElement("label");
     yield_input_label.className = "text-input-label";
     yield_input_label.style.fontSize = "large";
     yield_input_label.htmlFor = "yield_input";
     yield_input_label.innerHTML = "Recipe yield: ";
-    e.appendChild(yield_input_label);
-    let yield_input = document.createElement("input");
+    yield_input_div.appendChild(yield_input_label);
+    const yield_input = document.createElement("input");
     yield_input.id = "selling_input";
     yield_input.className = "text-input";
     yield_input.style.width = "100px";
     yield_input.value = recipe.yield;
-    e.appendChild(yield_input);
+    yield_input_div.append(yield_input);
+    const yield_unit_of_measure = document.createElement("input");
+    yield_unit_of_measure.id = "unit_of_measure_input";
+    yield_unit_of_measure.className = "text-input";
+    yield_unit_of_measure.style.width = "100px";
+    yield_unit_of_measure.value = recipe.unit_of_measure;
+    yield_input_div.append(yield_unit_of_measure);
+    costs_div.appendChild(yield_input_div);
+    unit_of_measure_update();
+    yield_unit_of_measure.addEventListener("input", ()=>{unit_of_measure_update()});
 
     // Divide recipe cost by yield to get cost per unit
     recipe.cost = (recipe.total_cost - recipe.packaging_cost) / recipe.yield + recipe.packaging_cost;
 
     // Render costs
-    let costs_div = document.createElement("div");
-    e.appendChild(costs_div);
     create_costs(costs_div);
 
     // Add VAT exclusive selling price
-    let selling_without_vat = document.createElement("div");
+    const selling_without_vat = document.createElement("div");
     selling_without_vat.className = "recipe-totals";
-    selling_without_vat.style.fontWeight = "bold";
     selling_without_vat.innerHTML = "Selling without VAT: " + zar(recipe.selling / 1.15);
-    e.appendChild(selling_without_vat);
+    costs_div.appendChild(selling_without_vat);
 
     // Add selling price input and label
-    let selling_input_label = document.createElement("label");
+    const selling_input_label = document.createElement("label");
     selling_input_label.className = "text-input-label";
     selling_input_label.style.fontSize = "larger";
     selling_input_label.htmlFor = "sellling_input";
-    selling_input_label.innerHTML = "Selling price: R";
-    e.appendChild(selling_input_label);
-    let selling_input = document.createElement("input");
+    selling_input_label.innerHTML = "Selling price with VAT: R";
+    costs_div.appendChild(selling_input_label);
+    const selling_input = document.createElement("input");
     selling_input.id = "selling_input";
     selling_input.className = "text-input";
     selling_input.style.width = "100px";
     selling_input.style.fontSize = "larger";
     selling_input.value = recipe.selling;
-    e.appendChild(selling_input);
+    costs_div.appendChild(selling_input);
 
     // Add GP amount and %
-    let gp_output = document.createElement("h3");
+    const gp_output = document.createElement("h3");
     create_totals(gp_output, selling_input.value, recipe);
-    e.appendChild(gp_output);
+    costs_div.appendChild(gp_output);
 
     // Select the item specified in select_item
     if (select_item) {
@@ -683,14 +695,13 @@ function render_ingredients_table(e, recipe, select_item) {
     // Function to render recipe costs
     function create_costs(e) {
         // Add cost without packaging
-        e.innerHTML = "";
-        let total_without_packaging = document.createElement("div");
+        const total_without_packaging = document.createElement("div");
         total_without_packaging.className = "recipe-totals";
         total_without_packaging.innerHTML = "Cost without packaging: ";
         total_without_packaging.innerHTML += zar(recipe.cost - recipe.packaging_cost);
         e.appendChild(total_without_packaging);
         // Add cost grand total
-        let grand_total = document.createElement("div");
+        const grand_total = document.createElement("div");
         grand_total.className = "recipe-totals";
         grand_total.innerHTML = "Cost with packaging: ";
         grand_total.innerHTML += zar(recipe.cost);
@@ -706,6 +717,16 @@ function render_ingredients_table(e, recipe, select_item) {
         e.innerHTML = "GP = " + zar(gp) + " (" + gp_percent.toFixed(1) + "%)";
         recipe.selling = selling;
         selling_without_vat.innerHTML = "Selling without VAT: " + zar(recipe.selling / 1.15);
+    }
+
+    // Function to update UOM and check if yield starts with units, and make it red.
+    function unit_of_measure_update() {
+        r.unit_of_measure = yield_unit_of_measure.value;
+        if (yield_unit_of_measure.value.toLowerCase().startsWith("unit")) {
+            yield_unit_of_measure.style.borderColor = "red";
+        } else {
+            yield_unit_of_measure.style.borderColor = "#157946";
+        }
     }
 
     // Function to create table headers
@@ -901,6 +922,7 @@ class Recipe {
         this.id = -1;
         this.yield = 1;
         this.stock_on_hand = 0;
+        this.unit_of_measure = "units"
     }
     add_recipe_ingredient(id) {
         for (let i in this.recipe_ingredients) {
