@@ -806,7 +806,9 @@ function render_ingredients_table(e, recipe, select_item) {
                         "packing_qty": line_item["packing_qty"],
                         "cost": line_item["cost"],
                         "stock_on_hand": line_item["stock_on_hand"],
-                        "unit_of_measure": line_item["unit_of_measure"]
+                        "unit_of_measure": line_item["unit_of_measure"],
+                        "supplier_product_code": line_item["supplier_product_code"],
+                        "volume": line_item["volume"]
                     })
                     send_data(data, "", (success)=>{
                         if (!success) {
