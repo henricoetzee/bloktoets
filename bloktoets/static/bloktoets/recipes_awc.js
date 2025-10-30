@@ -611,9 +611,6 @@ function render_ingredients_table(e, recipe, select_item) {
         e.appendChild(packaging_ingredients_table);
     }
 
-    const costs_div = document.createElement("div");
-    e.appendChild(costs_div);
-
     // Add yield input and label
     const yield_input_div = document.createElement("div");
     const yield_input_label = document.createElement("label");
@@ -634,9 +631,12 @@ function render_ingredients_table(e, recipe, select_item) {
     yield_unit_of_measure.style.width = "100px";
     yield_unit_of_measure.value = recipe.unit_of_measure;
     yield_input_div.append(yield_unit_of_measure);
-    costs_div.appendChild(yield_input_div);
+    e.appendChild(yield_input_div);
     unit_of_measure_update();
     yield_unit_of_measure.addEventListener("input", ()=>{unit_of_measure_update()});
+
+    const costs_div = document.createElement("div");
+    e.appendChild(costs_div);
 
     // Divide recipe cost by yield to get cost per unit
     recipe.cost = (recipe.total_cost - recipe.packaging_cost) / recipe.yield + recipe.packaging_cost;
@@ -648,7 +648,7 @@ function render_ingredients_table(e, recipe, select_item) {
     const selling_without_vat = document.createElement("div");
     selling_without_vat.className = "recipe-totals";
     selling_without_vat.innerHTML = "Selling without VAT: " + zar(recipe.selling / 1.15);
-    costs_div.appendChild(selling_without_vat);
+    e.appendChild(selling_without_vat);
 
     // Add selling price input and label
     const selling_input_label = document.createElement("label");
@@ -656,19 +656,19 @@ function render_ingredients_table(e, recipe, select_item) {
     selling_input_label.style.fontSize = "larger";
     selling_input_label.htmlFor = "sellling_input";
     selling_input_label.innerHTML = "Selling price with VAT: R";
-    costs_div.appendChild(selling_input_label);
+    e.appendChild(selling_input_label);
     const selling_input = document.createElement("input");
     selling_input.id = "selling_input";
     selling_input.className = "text-input";
     selling_input.style.width = "100px";
     selling_input.style.fontSize = "larger";
     selling_input.value = recipe.selling;
-    costs_div.appendChild(selling_input);
+    e.appendChild(selling_input);
 
     // Add GP amount and %
     const gp_output = document.createElement("h3");
     create_totals(gp_output, selling_input.value, recipe);
-    costs_div.appendChild(gp_output);
+    e.appendChild(gp_output);
 
     // Select the item specified in select_item
     if (select_item) {
@@ -686,7 +686,9 @@ function render_ingredients_table(e, recipe, select_item) {
         if (keys.includes(key.key)) {
             recipe.yield = yield_input.value;
             recipe.cost = (recipe.total_cost - recipe.packaging_cost) / recipe.yield + recipe.packaging_cost;
+            costs_div.innerHTML = "";
             create_costs(costs_div);
+            create_totals(gp_output, selling_input.value, recipe);
         }
     }
 
