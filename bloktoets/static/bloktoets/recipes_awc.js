@@ -63,7 +63,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         // Create new recipe object
         r = new Recipe;
         let todo = "create";
-
+        console.log(response);
         if (existing_item) {
             todo = "modify";
             r.id = response.id;
@@ -78,6 +78,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             r.stock_on_hand = response.stock_on_hand;
             r.sub_dept = response.sub_dept;
             r.unit_of_measure = response.unit_of_measure;
+            r.packaging_percent = response.packaging_percent;
             sub_dept_input.value = r.sub_dept;
             input_name.value = r.name;
             input_scale.value = r.scale_code;
@@ -122,12 +123,12 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         input_product_ingredient.onclick = function() {content.appendChild(render_add_contents_window(products, "products", r))};
         button_holder.appendChild(input_product_ingredient);
         // Packaging ingredient button
-        let input_packaging_ingredient = document.createElement("button");
+/*         let input_packaging_ingredient = document.createElement("button");
         input_packaging_ingredient.className = "button-green";
         input_packaging_ingredient.style.width = "fit-content";
         input_packaging_ingredient.innerHTML = "+ packaging";
         input_packaging_ingredient.onclick = function() {content.appendChild(render_add_contents_window(packaging, "packaging", r))};
-        button_holder.appendChild(input_packaging_ingredient);
+        button_holder.appendChild(input_packaging_ingredient); */
         // Add button holder
         content.appendChild(button_holder);
 
@@ -257,7 +258,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         const input_cost_label = document.createElement("label");
         input_cost_label.className = "text-input-label";
         input_cost_label.htmlFor = "new_cost";
-        input_cost_label.innerHTML = "Cost";
+        input_cost_label.innerHTML = "Net Cost";
         content.appendChild(input_cost_label);
         const input_cost = document.createElement("input");
         input_cost.id = "new_cost";
@@ -524,14 +525,14 @@ function render_add_contents_window(contents, content_type, recipe) {
     
     // Create rows
     let tbody = table.createTBody();
-    for (row in contents["data"]) {
+    for (const row of contents["data"]) {
         const new_row = tbody.insertRow();
-        let id = contents.data[row]["id"];
+        let id = row["id"];
         new_row.onclick = function() {onclickfunction(id)}
-        for (cell in contents.data[row]) {
+        for (const cell in row) {
             if (cell == "name" || cell == "product_code") {
                 const new_cell = new_row.insertCell();
-                new_cell.innerHTML = contents.data[row][cell];
+                new_cell.innerHTML = row[cell];
             }
         }
     }
@@ -584,32 +585,32 @@ function render_ingredients_table(e, recipe, select_item) {
     }
     // ---------PRODUCT INGREDIENTS----------------
     if (recipe.ingredients.length > 0) {
-        let product_ingredients_header = document.createElement("h3");
+        const product_ingredients_header = document.createElement("h3");
         product_ingredients_header.innerHTML = "Product Ingrediens:";
         e.appendChild(product_ingredients_header);
-        let product_ingredients_table = document.createElement("table")
+        const product_ingredients_table = document.createElement("table")
         product_ingredients_table.className = "bt-table";
-        let product_ingredients_table_header = create_headers(true);
+        const product_ingredients_table_header = create_headers(true);
         product_ingredients_table.appendChild(product_ingredients_table_header)
         // Table
-        product_ingredients_table_body = create_body(recipe, "ingredients");
+        const product_ingredients_table_body = create_body(recipe, "ingredients");
         product_ingredients_table.appendChild(product_ingredients_table_body);
         e.appendChild(product_ingredients_table);   
     }
     // ---------PACKAGING INGREDIENTS---------------
-    if (recipe.packaging.length > 0) {
-        let packaging_ingredients_header = document.createElement("h3");
+/*     if (recipe.packaging.length > 0) {
+        const packaging_ingredients_header = document.createElement("h3");
         packaging_ingredients_header.innerHTML = "Packaging Ingrediens:";
         e.appendChild(packaging_ingredients_header);
-        let packaging_ingredients_table = document.createElement("table")
+        const packaging_ingredients_table = document.createElement("table")
         packaging_ingredients_table.className = "bt-table";
-        let packaging_ingredients_table_header = create_headers(true);
+        const packaging_ingredients_table_header = create_headers(true);
         packaging_ingredients_table.appendChild(packaging_ingredients_table_header)
         // Table
-        packaging_ingredients_table_body = create_body(recipe, "packaging");
+        const packaging_ingredients_table_body = create_body(recipe, "packaging");
         packaging_ingredients_table.appendChild(packaging_ingredients_table_body);
         e.appendChild(packaging_ingredients_table);
-    }
+    } */
 
     // Add yield input and label
     const yield_input_div = document.createElement("div");
@@ -639,7 +640,12 @@ function render_ingredients_table(e, recipe, select_item) {
     e.appendChild(costs_div);
 
     // Divide recipe cost by yield to get cost per unit
-    recipe.cost = (recipe.total_cost - recipe.packaging_cost) / recipe.yield + recipe.packaging_cost;
+    recipe.cost = recipe.total_cost / recipe.yield;
+
+    // Add packaging to costs
+    console.log(recipe);
+    recipe.packaging_cost = recipe.cost * recipe.packaging_percent / 100;
+    recipe.cost += recipe.packaging_cost;
 
     // Render costs
     create_costs(costs_div);
@@ -705,7 +711,7 @@ function render_ingredients_table(e, recipe, select_item) {
         // Add cost grand total
         const grand_total = document.createElement("div");
         grand_total.className = "recipe-totals";
-        grand_total.innerHTML = "Cost with packaging: ";
+        grand_total.innerHTML = "(+" + recipe.packaging_percent + "% packaging cost)" + " Cost with packaging: ";
         grand_total.innerHTML += zar(recipe.cost);
         e.appendChild(grand_total);
     }
@@ -761,13 +767,14 @@ function render_ingredients_table(e, recipe, select_item) {
             items = products;
         };
         if (what == "packaging") {
+            return;     // Packaging removed
             data = recipe.packaging;
             items = packaging;
         };
         let total = 0.0;
         let total_qty = 0.0;
-        for (line in data) {
-            let line_item = get_item(data[line][0], items)
+        for (const line of data) {
+            let line_item = get_item(line[0], items)
             let row = body.insertRow();
             row.className = "recipe-ingredient-row"
             row.style.cursor = "default"     //TODO
@@ -836,8 +843,8 @@ function render_ingredients_table(e, recipe, select_item) {
             qty_input.id = what + line_item["id"]
             qty_input.style.width = "90px";
             qty_input.style.margin = "0px";
-            qty_input.value = data[line][1];
-            total_qty += data[line][1];
+            qty_input.value = line[1];
+            total_qty += line[1];
 
             qty_input.onchange = function() {qty_changed()}
 
@@ -849,7 +856,7 @@ function render_ingredients_table(e, recipe, select_item) {
                 render_ingredients_table(e, recipe, what + line_item["id"]);
             }
 
-            line_total *= data[line][1];
+            line_total *= line[1];
             cell.append(qty_input);
 
             // Unit of measure for qty input, if products
@@ -897,16 +904,16 @@ function render_ingredients_table(e, recipe, select_item) {
         // Extra blank cell
         cell = row.insertCell();
 
-        // If we calculated packaging cos, add that to recipe object
-        if (what == "packaging") {recipe.packaging_cost = total};
+        // If we calculated packaging cost, add that to recipe object
+        // if (what == "packaging") {recipe.packaging_cost = total};
 
         return body;
 
         // Function that returns the line item that matched the id.
         function get_item(id, items) {
-            for (let item in items.data) {
-                if (items.data[item]["id"] == id) {
-                    return items.data[item];
+            for (const item of items.data) {
+                if (item["id"] == id) {
+                    return item;
                 }
             }
         }
@@ -920,17 +927,18 @@ class Recipe {
         this.ingredients = [];
         this.packaging = [];
         this.cost = 0.0;
-        this.total_costs = 0.0;
+        this.total_cost = 0.0;
         this.packaging_cost = 0.0;
         this.selling = 0.0;
         this.id = -1;
         this.yield = 1;
         this.stock_on_hand = 0;
-        this.unit_of_measure = "units"
+        this.unit_of_measure = "units";
+        this.packaging_percent = 2.0;
     }
     add_recipe_ingredient(id) {
-        for (let i in this.recipe_ingredients) {
-            if (id == this.recipe_ingredients[i][0]) {
+        for (const ingredient of this.recipe_ingredients) {
+            if (id == ingredient[0]) {
                 show_message("Cannot add ingredient twice")
                 id = -1;
                 break;
@@ -939,8 +947,8 @@ class Recipe {
         if (id >= 0) {this.recipe_ingredients.push([id, 1])}
     }
     add_ingredient(id) {
-        for (let i in this.ingredients) {
-            if (id == this.ingredients[i][0]) {
+        for (const ingredient of this.ingredients) {
+            if (id == ingredient[0]) {
                 show_message("Cannot add ingredient twice")
                 id = -1;
                 break;
@@ -949,9 +957,9 @@ class Recipe {
         if (id >= 0) {this.ingredients.push([id, 1])}
     }
     add_packaging(id) {
-        for (let i in this.packaging) {
-            if (id == this.packaging[i][0]) {
-                show_message("Cannot add ingredient twice")
+        for (let packing in this.packaging) {
+            if (id == packing[0]) {
+                show_message("Cannot add packaging twice")
                 id = -1;
                 break;
             }

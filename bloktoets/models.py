@@ -17,11 +17,12 @@ class Store(models.Model):
 class RecipeBook(models.Model):
     name = models.CharField(max_length=64, blank=False)
     store = models.ForeignKey(Store, on_delete=models.PROTECT)
+    packaging_percent = models.DecimalField(max_digits=4, decimal_places=2, default=2)
 
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name,
+            "name": self.name
         }
     def __str__(self):
         return self.store.name + " - " + self.name
@@ -108,6 +109,7 @@ class Recipe(models.Model):
     stock_on_hand = models.FloatField(default=0)
     sub_dept = models.CharField(max_length=32)
     unit_of_measure = models.CharField(max_length=32, default="units")
+
     ingredients = models.ManyToManyField(
         Products,
         blank=True,
@@ -127,6 +129,9 @@ class Recipe(models.Model):
         through="Recipe_relation",
         through_fields=("recipe", "ingredient")
     )
+
+    def packaging_percent(self):
+        return float(self.recipe_book.packaging_percent)
 
     def serialize(self):
         return {

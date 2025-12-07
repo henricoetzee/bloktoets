@@ -129,7 +129,8 @@ def api(request):
                     "recipe_yield": recipe.recipe_yield,
                     "used_in": [r.recipe.name for r in used_in],
                     "stock_on_hand": recipe.stock_on_hand,
-                    "unit_of_measure": recipe.unit_of_measure
+                    "unit_of_measure": recipe.unit_of_measure,
+                    "packaging_percent": recipe.packaging_percent()
                 })
             except Exception as e:
                 print(e)
@@ -329,13 +330,13 @@ def api(request):
                         )
                         relation.save()
 
-                    for item in data["packaging"]:
-                        relation = Packaging_relation(
-                            recipe = recipe,
-                            ingredient = Packaging.objects.get(id=item[0]),
-                            amount = item[1]
-                        )
-                        relation.save()
+                    #for item in data["packaging"]:
+                    #    relation = Packaging_relation(
+                    #        recipe = recipe,
+                    #        ingredient = Packaging.objects.get(id=item[0]),
+                    #        amount = item[1]
+                    #    )
+                    #    relation.save()
                     
                     return JsonResponse({"status": "success", "message": "Recipe successfully created"})
 
@@ -385,13 +386,13 @@ def api(request):
                         )
                         relation.save()
 
-                    for item in data["packaging"]:
-                        relation = Packaging_relation(
-                            recipe = recipe,
-                            ingredient = Packaging.objects.get(id=item[0]),
-                            amount = item[1]
-                        )
-                        relation.save()
+                    #for item in data["packaging"]:
+                    #    relation = Packaging_relation(
+                    #        recipe = recipe,
+                    #        ingredient = Packaging.objects.get(id=item[0]),
+                    #        amount = item[1]
+                    #    )
+                    #    relation.save()
 
                     # Check for loops
                     if find_loop_all():
@@ -459,8 +460,8 @@ def update_pricing(what_changed, id):
     changes = []
     if what_changed == "product":
         relations = Product_relation.objects.filter(ingredient__id=id)
-    if what_changed == "packaging":
-        relations = Packaging_relation.objects.filter(ingredient__id=id)
+    #if what_changed == "packaging":
+    #    relations = Packaging_relation.objects.filter(ingredient__id=id)
     if what_changed == "recipe":
         relations = Recipe_relation.objects.filter(ingredient__id=id)
     if relations != False:
@@ -499,8 +500,9 @@ def update_recipe_pricing(id = False, depth=0):
     for used_products in Product_relation.objects.filter(recipe = recipe):
         recipe.cost_per_unit += used_products.ingredient.unit_price * used_products.amount
     recipe.cost_per_unit /= recipe.recipe_yield
-    for used_packaging in Packaging_relation.objects.filter(recipe = recipe):
-        recipe.cost_per_unit += used_packaging.ingredient.unit_price * used_packaging.amount
+    #for used_packaging in Packaging_relation.objects.filter(recipe = recipe):
+    #    recipe.cost_per_unit += used_packaging.ingredient.unit_price * used_packaging.amount
+    recipe.cost_per_unit += recipe.cost_per_unit * recipe.packaging_percent() / 100
     if recipe.selling_price != 0:
         recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
     else:
