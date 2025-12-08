@@ -88,7 +88,7 @@ function render_selector(selected_component) {
     selector_container.innerHTML = " > ";
     selector_container.style.marginLeft = "10px";
     
-    let select_options = ["recipes", "products", "packaging", "stock"]
+    let select_options = ["recipes", "products", "stock"]
     let selector = document.createElement("select");
     selector.className = "component-selector";
     
