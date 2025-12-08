@@ -92,7 +92,7 @@ def api(request):
                 print(e)
                 return JsonResponse({"status": "failed", "error": "Server error while getting product"})
         # Get single packaging
-        if (request.GET['get'] == 'package'):
+        """if (request.GET['get'] == 'package'):
             try:
                 package = Packaging.objects.get(id=request.GET['id'])
                 used_in = Packaging_relation.objects.filter(ingredient=package)
@@ -105,13 +105,14 @@ def api(request):
             except Exception as e:
                 print(e)
                 return JsonResponse({"status": "failed", "error": "Server error while getting package"})
+        """
         # Get single recipe
         if (request.GET['get'] == 'recipe'):
             try:
                 recipe = Recipe.objects.get(id=request.GET['id'])
                 recipe_ingredients = Recipe_relation.objects.filter(recipe=recipe)
                 product_ingredients = Product_relation.objects.filter(recipe=recipe)
-                packaging_ingredients = Packaging_relation.objects.filter(recipe=recipe)
+                #packaging_ingredients = Packaging_relation.objects.filter(recipe=recipe)
                 used_in = Recipe_relation.objects.filter(ingredient=recipe)
                 return JsonResponse({
                     "status": "success",
@@ -121,7 +122,7 @@ def api(request):
                     "sub_dept": recipe.sub_dept,
                     "recipe_ingredients": [i.serialize() for i in recipe_ingredients],
                     "product_ingredients": [i.serialize() for i in product_ingredients],
-                    "packaging_ingredients": [i.serialize() for i in packaging_ingredients],
+                    #"packaging_ingredients": [i.serialize() for i in packaging_ingredients],
                     "cost_per_unit": recipe.cost_per_unit,
                     "unit_price": recipe.cost_per_unit,  # Extra name for cost, blame bad planning
                     "gross_profit": recipe.gross_profit,
@@ -221,7 +222,7 @@ def api(request):
 
                 
         # -------------PACKAGING---------------#
-        if (data['what'] == 'packaging'):  
+        """if (data['what'] == 'packaging'):  
 
             if (data['todo'] == 'create'): #-----CREATE PACKAGING
                 try:
@@ -290,7 +291,7 @@ def api(request):
                 except Exception as e:
                     print(e)
                     return JsonResponse({"status": "failed", "error": "Failed to delete packaging"})
-                
+        """        
         # -----------------RECIPE-----------------------#
         if (data['what'] == "recipe"):
 

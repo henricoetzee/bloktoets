@@ -21,7 +21,7 @@ function render_recipes(response, hist=true) {
 
     // Get products and packaging that is needed for recipes
     if (products == null) {get_data("products", "Getting products", current_store, current_recipebook, false)}
-    if (packaging == null) {get_data("packaging", "Getting products", current_store, current_recipebook, false)}
+    //if (packaging == null) {get_data("packaging", "Getting products", current_store, current_recipebook, false)}
 
     render_table(response, function(id) {get_data("recipe", "Getting recipe...", id)});
 }

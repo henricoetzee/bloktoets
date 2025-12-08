@@ -54,8 +54,8 @@ function render_recipebooks(response, hist=true) {
     // Render breadcrumbs
     // Find store name for breadcrumbs
     let store_name = "";
-    for (s in stores.data) {
-        if (stores.data[s].id == current_store) {store_name = stores.data[s].name}
+    for (const store of stores.data) {
+        if (store.id == current_store) {store_name = store.name}
     }
     breadcrumbs = [store_name,0]
     render_breadcrumbs();
