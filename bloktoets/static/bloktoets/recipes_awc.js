@@ -22,36 +22,36 @@ function create_add_window_contents(t, add_window_container, existing_item=false
     observer.observe(document.body);
 
     // Name input - common in all three models
-    let input_name_label = document.createElement("label");
+    const input_name_label = document.createElement("label");
     input_name_label.className = "text-input-label";
     input_name_label.htmlFor = "new_name";
     input_name_label.innerHTML = "Name";
     content.appendChild(input_name_label);
-    let input_name = document.createElement("input");
+    const input_name = document.createElement("input");
     input_name.id = "new_name";
     input_name.type = "text";
     input_name.className = "text-input";
     content.appendChild(input_name);
 
     // Scale code input - common in all three models
-    let input_scale_label = document.createElement("label");
+    const input_scale_label = document.createElement("label");
     input_scale_label.className = "text-input-label";
     input_scale_label.htmlFor = "new_scale";
     input_scale_label.innerHTML = "Scale code";
     content.appendChild(input_scale_label);
-    let input_scale = document.createElement("input");
+    const input_scale = document.createElement("input");
     input_scale.id = "new_scale";
     input_scale.type = "text";
     input_scale.className = "text-input";
     content.appendChild(input_scale);
 
     // Sub department input
-    let sub_dept_input_label = document.createElement("label");
+    const sub_dept_input_label = document.createElement("label");
     sub_dept_input_label.className = "text-input-label";
     sub_dept_input_label.htmlFor = "sub_dept_input";
     sub_dept_input_label.innerHTML = "Sub. Dept.";
     content.appendChild(sub_dept_input_label);
-    let sub_dept_input = document.createElement("input");
+    const sub_dept_input = document.createElement("input");
     sub_dept_input.id = "sub_dept";
     sub_dept_input.type = "text";
     sub_dept_input.className = "text-input";
@@ -59,11 +59,12 @@ function create_add_window_contents(t, add_window_container, existing_item=false
 
     // Split into two branches, one for recipes, and the other for
     // products and packaging
+    console.log(response);
     if (t == "recipe") {
         // Create new recipe object
         r = new Recipe;
         let todo = "create";
-        console.log(response);
+    
         if (existing_item) {
             todo = "modify";
             r.id = response.id;
@@ -79,6 +80,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             r.sub_dept = response.sub_dept;
             r.unit_of_measure = response.unit_of_measure;
             r.packaging_percent = response.packaging_percent;
+            r.product_code = response.product_code;
             sub_dept_input.value = r.sub_dept;
             input_name.value = r.name;
             input_scale.value = r.scale_code;
@@ -87,17 +89,18 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         // Make window bigger and center display
         content.style.width = "1000px";
         content.style.textAlign = "center";
+
         // Add break before sub dept
         const break_before_sub_dept = document.createElement("br");
         content.insertBefore(break_before_sub_dept, sub_dept_input_label);
 
         // Add stock on hand input
-        let input_stock_label = document.createElement("label");
+        const input_stock_label = document.createElement("label");
         input_stock_label.className = "text-input-label";
         input_stock_label.htmlFor = "new_stock";
         input_stock_label.innerHTML = "Stock";
         content.appendChild(input_stock_label);
-        let input_stock = document.createElement("input");
+        const input_stock = document.createElement("input");
         input_stock.id = "new_cost";
         input_stock.type = "number";
         input_stock.min = 0;
@@ -106,13 +109,38 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         input_stock.value = r.stock_on_hand;
         content.appendChild(input_stock);
 
+        // Add product code input
+        const input_product_code_label = document.createElement("label");
+        input_product_code_label.className = "text-input-label";
+        input_product_code_label.htmlFor = "product_code";
+        input_product_code_label.innerHTML = "Product code";
+        input_product_code_label.style.marginLeft = "30px";
+        // Append later  content.appendChild(input_product_code_label);
+        const input_product_code = document.createElement("input");
+        input_product_code.id = "product_code";
+        input_product_code.type = "text";
+        input_product_code.className = "text-input";
+        input_product_code.value = r.product_code;
+        // Append later  content.appendChild(input_product_code);
+
+        // Change look of name, scale code, sub dept stock on hand and product code labels
+        const change_labels = [input_name_label, input_scale_label, sub_dept_input_label, input_stock_label]
+        for (const label of change_labels) {
+            label.style.display = "inline-block";
+            label.style.width = "130px";
+            label.style.textAlign = "right";
+        }
+
         // -------Add the +Recipe +Product +Packaging buttons
-        let button_holder = document.createElement("div");
+        const button_holder = document.createElement("div");
+        button_holder.style.textAlign = "left";
+        button_holder.append(input_product_code_label, input_product_code);
         // Recipe ingredients button
         let input_recipe_ingredient = document.createElement("button");
         input_recipe_ingredient.className = "button-green";
         input_recipe_ingredient.style.width = "fit-content";
         input_recipe_ingredient.innerHTML = "+ recipe";
+        input_recipe_ingredient.style.marginLeft = "100px";
         input_recipe_ingredient.onclick = function() {content.appendChild(render_add_contents_window(recipes, "recipes", r))};
         button_holder.appendChild(input_recipe_ingredient);
         // Product ingredient button
@@ -163,7 +191,8 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "recipe_yield": r.yield,
                 "stock_on_hand": input_stock.value,
                 "sub_dept": sub_dept_input.value,
-                "unit_of_measure": r.unit_of_measure
+                "unit_of_measure": r.unit_of_measure,
+                "product_code": input_product_code.value
             });
             send_data(data, "Sending recipe to server...", () => {
                 if (current_view == "stock") {
@@ -643,7 +672,6 @@ function render_ingredients_table(e, recipe, select_item) {
     recipe.cost = recipe.total_cost / recipe.yield;
 
     // Add packaging to costs
-    console.log(recipe);
     recipe.packaging_cost = recipe.cost * recipe.packaging_percent / 100;
     recipe.cost += recipe.packaging_cost;
 
@@ -768,8 +796,8 @@ function render_ingredients_table(e, recipe, select_item) {
         };
         if (what == "packaging") {
             return;     // Packaging removed
-            data = recipe.packaging;
-            items = packaging;
+            //data = recipe.packaging;
+            //items = packaging;
         };
         let total = 0.0;
         let total_qty = 0.0;
@@ -935,6 +963,7 @@ class Recipe {
         this.stock_on_hand = 0;
         this.unit_of_measure = "units";
         this.packaging_percent = 2.0;
+        this.product_code = "";
     }
     add_recipe_ingredient(id) {
         for (const ingredient of this.recipe_ingredients) {

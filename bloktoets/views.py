@@ -131,7 +131,8 @@ def api(request):
                     "used_in": [r.recipe.name for r in used_in],
                     "stock_on_hand": recipe.stock_on_hand,
                     "unit_of_measure": recipe.unit_of_measure,
-                    "packaging_percent": recipe.packaging_percent()
+                    "packaging_percent": recipe.packaging_percent(),
+                    "product_code": recipe.product_code
                 })
             except Exception as e:
                 print(e)
@@ -307,7 +308,8 @@ def api(request):
                         selling_price = data["selling_price"],
                         recipe_yield = data["recipe_yield"],
                         stock_on_hand = data["stock_on_hand"],
-                        unit_of_measure = data["unit_of_measure"]
+                        unit_of_measure = data["unit_of_measure"],
+                        product_code = data["product_code"]
                     )
                     if recipe.selling_price != 0:
                         recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
@@ -356,6 +358,7 @@ def api(request):
                     recipe.recipe_yield = data["recipe_yield"]
                     recipe.stock_on_hand = data["stock_on_hand"]
                     recipe.unit_of_measure = data["unit_of_measure"]
+                    recipe.product_code = data["product_code"]
                     if recipe.selling_price != 0:
                         recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
                     else:
