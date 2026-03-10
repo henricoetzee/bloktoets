@@ -156,6 +156,7 @@ def api(request):
                         sub_dept = data["sub_dept"],
                         packing_qty = float(data["packing_qty"]),
                         cost = float(data["cost"]),
+                        list_cost = float(data["list_cost"]),
                         stock_on_hand = float(data["stock_on_hand"]),
                         unit_of_measure = data["unit_of_measure"],
                         supplier_product_code = data["supplier_product_code"],
@@ -171,7 +172,7 @@ def api(request):
                     return JsonResponse({"status": "success", "message": "Product created"})
                 except Exception as e:
                     print(e)
-                    return JsonResponse({"status": "failed", "error": "Failed to create product."})
+                    return JsonResponse({"status": "failed", "error": "Failed to create product.", "exception": e})
             
             if (data['todo'] == 'modify'):  #-----------CHANGE PRODUCT
                 try:
@@ -183,6 +184,7 @@ def api(request):
                     p.sub_dept = data["sub_dept"]
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])
+                    p.list_cost = float(data["list_cost"])
                     p.stock_on_hand = float(data["stock_on_hand"])
                     p.unit_of_measure = data["unit_of_measure"]
                     p.supplier_product_code = data["supplier_product_code"]

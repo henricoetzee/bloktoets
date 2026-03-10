@@ -36,6 +36,7 @@ class Products(models.Model):
     packing_qty = models.FloatField()
     cost = models.FloatField()
     unit_price = models.FloatField()
+    list_cost = models.FloatField(blank=True, null=True)
     stock_on_hand = models.FloatField(default=00)
     sub_dept = models.CharField(max_length=32)
     volume = models.FloatField()
@@ -52,6 +53,7 @@ class Products(models.Model):
             "sub_dept": self.sub_dept,
             "packing_qty": self.packing_qty,
             "cost": self.cost,
+            "list_cost": self.list_cost,
             "unit_price": self.unit_price,
             "stock_on_hand": self.stock_on_hand,
             "used_in_recipes": used_in_recipes,

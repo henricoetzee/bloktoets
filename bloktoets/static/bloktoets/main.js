@@ -127,7 +127,8 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
                 cell != "used_in_recipes" && 
                 cell != "unit_of_measure" &&
                 cell != "volume" &&
-                cell != "supplier_product_code") {
+                cell != "supplier_product_code" &&
+                cell != "list_cost") {
                 const new_cell = new_row.insertCell();
                 // Render currency for certain columns:
                 if (cell == "cost" || cell == "unit_price" || cell == "cost_per_unit") {

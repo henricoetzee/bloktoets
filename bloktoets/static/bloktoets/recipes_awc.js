@@ -298,6 +298,20 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         content.appendChild(input_cost);
         input_cost.addEventListener("input", ()=> {update_cost_per_unit()});
 
+        // List Cost
+        const input_list_cost_label = document.createElement("label");
+        input_list_cost_label.className = "text-input-label";
+        input_list_cost_label.htmlFor = "new_list_cost";
+        input_list_cost_label.innerHTML = "List Cost";
+        content.appendChild(input_list_cost_label);
+        const input_list_cost = document.createElement("input");
+        input_list_cost.id = "new_cost";
+        input_list_cost.type = "number";
+        input_list_cost.min = 0;
+        input_list_cost.step = 0.01;
+        input_list_cost.className = "text-input";
+        content.appendChild(input_list_cost);
+
         // Packing cost
         const cost_per_package_label = document.createElement("label");
         cost_per_package_label.className = "text-input-label";
@@ -372,6 +386,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             product_code_input.value = response.item.product_code;
             input_packing_qty.value = response.item.packing_qty;
             input_cost.value = response.item.cost;
+            input_list_cost.value = response.item.list_cost;
             id = response.item.id;
             input_checkbox.checked = response.store_visible;
             input_checkbox.disabled = true;
@@ -398,6 +413,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "product_code": product_code_input.value,
                 "packing_qty": input_packing_qty.value,
                 "cost": input_cost.value,
+                "list_cost": input_list_cost.value,
                 "store_visible": input_checkbox.checked,
                 "store": current_store,
                 "recipe_book": current_recipebook,
