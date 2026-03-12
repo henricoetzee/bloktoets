@@ -156,7 +156,7 @@ def api(request):
                         sub_dept = data["sub_dept"],
                         packing_qty = float(data["packing_qty"]),
                         cost = float(data["cost"]),
-                        list_cost = float(data["list_cost"]),
+                        list_cost = float(data["list_cost"]) if data["list_cost"] else 0,
                         stock_on_hand = float(data["stock_on_hand"]),
                         unit_of_measure = data["unit_of_measure"],
                         supplier_product_code = data["supplier_product_code"],
@@ -184,7 +184,7 @@ def api(request):
                     p.sub_dept = data["sub_dept"]
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])
-                    p.list_cost = float(data["list_cost"])
+                    p.list_cost = float(data["list_cost"]) if data["list_cost"] else 0
                     p.stock_on_hand = float(data["stock_on_hand"])
                     p.unit_of_measure = data["unit_of_measure"]
                     p.supplier_product_code = data["supplier_product_code"]
@@ -442,24 +442,7 @@ def api(request):
         return JsonResponse({"status": "failed", "error": "Unknown request"})
     return JsonResponse({"status": "failed", "error": "Unknown request"})
 
-# Old update pricing function
-# def update_recipe_pricing():
-#     recipes = Recipe.objects.all()
-#     for i in range(0,10):    # Run 10 times so that changes in recipes can be reflected in other recipes that was already changed.
-#         for recipe in recipes:
-#             recipe.cost_per_unit = 0
-#             for used_recipes in Recipe_relation.objects.filter(recipe = recipe):
-#                 recipe.cost_per_unit += used_recipes.ingredient.cost_per_unit * used_recipes.amount
-#             for used_products in Product_relation.objects.filter(recipe = recipe):
-#                 recipe.cost_per_unit += used_products.ingredient.cost / used_products.ingredient.packing_qty * used_products.amount
-#             for used_packaging in Packaging_relation.objects.filter(recipe = recipe):
-#                 recipe.cost_per_unit += used_packaging.ingredient.cost / used_packaging.ingredient.packing_qty * used_packaging.amount
-#             recipe.cost_per_unit /= recipe.recipe_yield
-#             if recipe.selling_price != 0:
-#                 recipe.gross_profit = ((recipe.selling_price / 1.15) - recipe.cost_per_unit) / (recipe.selling_price / 1.15) * 100
-#             else:
-#                 recipe.gross_profit = 0
-#             recipe.save()
+
 
 def update_pricing(what_changed, id):
     relations = False
