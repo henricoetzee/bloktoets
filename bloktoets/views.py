@@ -178,6 +178,7 @@ def api(request):
                 try:
                     p = Products.objects.get(id=data["id"])
                     old_cost = p.cost
+                    old_volume = p.volume
                     p.name = data["name"]
                     p.scale_code = data["scale_code"]
                     p.product_code = data["product_code"]
@@ -194,7 +195,7 @@ def api(request):
                     p.save()
 
                     # Update recipe pricing:
-                    if old_cost != p.cost:
+                    if old_cost != p.cost or old_volume != p.volume:
                         changes = update_pricing("product", p.id)
                     else:
                         changes = []
