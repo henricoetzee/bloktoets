@@ -100,7 +100,7 @@ def extenal_product_price_update(request):
         
         recipe_updates = update_recipe_pricing_all(store_id)
 
-        return JsonResponse({"products_updated": updated, "errors": errors, "recipes_updates": recipe_updates})
+        return JsonResponse({"products_updated": updated, "errors": errors, "recipe_updates": recipe_updates})
 
 
     except Exception as e:
