@@ -35,6 +35,8 @@ def extenal_product_price_update(request):
             code = entry.get("product_code")
             name = entry.get("name")
             price = entry.get("price")
+            list_cost = entry.get("list_cost")
+            stock_on_hand = entry.get("stock_on_hand")
 
             if not code or price is None:
                 errors.append({"product_code": code, "error": "Missing data"})
@@ -45,16 +47,18 @@ def extenal_product_price_update(request):
             try:
                 products = Products.objects.filter(product_code=code, recipe_book__store=store.id)
                 for product in products:
-                    # Update price, if it is different
-                    if product.cost != price:
+                    # Update product values, if it is different
+                    if product.cost != price or product.name != name or product.list_cost != list_cost or product.stock_on_hand != stock_on_hand:
                         updated[code] = {
                             "department": product.recipe_book.name,
                             "old_cost": product.cost,
-                            "new_cost": price,"price_changes": [],                            
+                            "new_cost": price,"price_changes": [],
+                            "old_name": product.name
                             }
                         product.cost = price
                         product.unit_price = price / product.packing_qty
-                        updated[code]["old_name"] = product.name        # So that we can see the name in the email. Name will not be shown if name is not updated.
+                        product.list_cost = list_cost
+                        product.stock_on_hand = stock_on_hand
                         product.save()
                         #updated[code]["price_changes"].extend(update_pricing("product", product.id))
 
