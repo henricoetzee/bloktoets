@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from .models import Products, Packaging, Recipe, Store
-from .views import update_pricing
+from .views import update_pricing, update_recipe_pricing_all
 import json
 import traceback
 
@@ -56,7 +56,7 @@ def extenal_product_price_update(request):
                         product.unit_price = price / product.packing_qty
                         updated[code]["old_name"] = product.name        # So that we can see the name in the email. Name will not be shown if name is not updated.
                         product.save()
-                        updated[code]["price_changes"].extend(update_pricing("product", product.id))
+                        #updated[code]["price_changes"].extend(update_pricing("product", product.id))
 
                     # Update name, if it is different
                     if product.name != name:
@@ -71,30 +71,32 @@ def extenal_product_price_update(request):
                 errors.append({"product_code": code, "error in products": str(e)})
 
             # If there are no products, try to update packaging
-            if len(products) == 0:
-                try:
-                    packs = Packaging.objects.filter(product_code=code, store=store)
-                    for pack in packs:
-                        # Update price, if it is different
-                        if pack.cost != price:
-                            updated[code] = {"old_cost": pack.cost, "new_cost": price, "price_changes": []}
-                            pack.cost = price
-                            pack.save()
-                            updated[code]["price_changes"].extend(update_pricing("packaging", pack.id))
-                        
-                        # Update name if it is different
-                        if pack.name != name:
-                            if (type(updated[code]) != dict):
-                                updated[code] = {}
-                            updated[code]["old_name"] = pack.name
-                            updated[code]["new_name"] = name
-                            pack.name = name
-                            pack.save()
+            #if len(products) == 0:
+            #    try:
+            #        packs = Packaging.objects.filter(product_code=code, store=store)
+            #        for pack in packs:
+            #            # Update price, if it is different
+            #            if pack.cost != price:
+            #                updated[code] = {"old_cost": pack.cost, "new_cost": price, "price_changes": []}
+            #                pack.cost = price
+            #                pack.save()
+            #                updated[code]["price_changes"].extend(update_pricing("packaging", pack.id))
+            #            
+            #            # Update name if it is different
+            #            if pack.name != name:
+            #                if (type(updated[code]) != dict):
+            #                    updated[code] = {}
+            #                updated[code]["old_name"] = pack.name
+            #                updated[code]["new_name"] = name
+            #                pack.name = name
+            #                pack.save()
 
-                except Exception as e:
-                    errors.append({"product_code": code, "error in packaging": str(e)})
+            #    except Exception as e:
+            #        errors.append({"product_code": code, "error in packaging": str(e)})
         
-        return JsonResponse({"updated": updated, "errors": errors})
+        recipe_updates = update_recipe_pricing_all(store_id)
+
+        return JsonResponse({"products_updated": updated, "errors": errors, "recipes_updates": recipe_updates})
 
 
     except Exception as e:
