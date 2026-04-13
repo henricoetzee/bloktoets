@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 
 class Store(models.Model):
@@ -26,6 +27,11 @@ class RecipeBook(models.Model):
         }
     def __str__(self):
         return self.store.name + " - " + self.name
+    
+    def save(self, *args, **kwargs):
+        from .views import update_recipe_pricing_all
+        super().save(*args, **kwargs)
+        update_recipe_pricing_all(self.id)
 
 class Products(models.Model):
     name = models.CharField(max_length=64, blank=False)
