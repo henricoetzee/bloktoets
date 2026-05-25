@@ -48,6 +48,7 @@ class Products(models.Model):
     volume = models.FloatField()
     unit_of_measure = models.CharField(max_length=32, default="unit")
     supplier_product_code = models.CharField(max_length=64, blank=True)
+    last_received_cost = models.FloatField(blank=True, null=True)
 
     def serialize(self):
         used_in_recipes = True if Product_relation.objects.filter(ingredient=self).count() else False
@@ -60,6 +61,7 @@ class Products(models.Model):
             "packing_qty": self.packing_qty,
             "cost": self.cost,
             "list_cost": self.list_cost,
+            "last_received_cost": self.last_received_cost,
             "unit_price": self.unit_price,
             "stock_on_hand": self.stock_on_hand,
             "used_in_recipes": used_in_recipes,

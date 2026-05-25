@@ -157,6 +157,7 @@ def api(request):
                         packing_qty = float(data["packing_qty"]),
                         cost = float(data["cost"]),
                         list_cost = float(data["list_cost"]) if data["list_cost"] else 0,
+                        last_received_cost = float(data["last_received_cost"]) if data["last_received_cost"] else 0,
                         stock_on_hand = float(data["stock_on_hand"]),
                         unit_of_measure = data["unit_of_measure"],
                         supplier_product_code = data["supplier_product_code"],
@@ -186,6 +187,7 @@ def api(request):
                     p.packing_qty = float(data["packing_qty"])
                     p.cost = float(data["cost"])
                     p.list_cost = float(data["list_cost"]) if data["list_cost"] else 0
+                    p.last_received_cost = float(data["last_received_cost"]) if data["last_received_cost"] else 0
                     p.stock_on_hand = float(data["stock_on_hand"])
                     p.unit_of_measure = data["unit_of_measure"]
                     p.supplier_product_code = data["supplier_product_code"]
@@ -442,8 +444,6 @@ def api(request):
                 return JsonResponse({"status": "failed", "error": e})
         return JsonResponse({"status": "failed", "error": "Unknown request"})
     return JsonResponse({"status": "failed", "error": "Unknown request"})
-
-
 
 def update_pricing(what_changed, id):
     relations = False

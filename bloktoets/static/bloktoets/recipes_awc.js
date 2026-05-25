@@ -312,6 +312,20 @@ function create_add_window_contents(t, add_window_container, existing_item=false
         input_list_cost.className = "text-input";
         content.appendChild(input_list_cost);
 
+        // Last Received Cost
+        const last_received_cost_label = document.createElement("label");
+        last_received_cost_label.className = "text-input-label";
+        last_received_cost_label.htmlFor = "last_received_cost";
+        last_received_cost_label.innerHTML = "Last Reveived Cost";
+        content.appendChild(last_received_cost_label);
+        const last_received_cost = document.createElement("input");
+        last_received_cost.id = "last_received_cost";
+        last_received_cost.type = "number";
+        last_received_cost.min = 0;
+        last_received_cost.step = 0.01;
+        last_received_cost.className = "text-input";
+        content.appendChild(last_received_cost);
+
         // Packing cost
         const cost_per_package_label = document.createElement("label");
         cost_per_package_label.className = "text-input-label";
@@ -387,6 +401,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             input_packing_qty.value = response.item.packing_qty;
             input_cost.value = response.item.cost;
             input_list_cost.value = response.item.list_cost;
+            last_received_cost.value = response.item.last_received_cost;
             id = response.item.id;
             input_checkbox.checked = response.store_visible;
             input_checkbox.disabled = true;
@@ -414,6 +429,7 @@ function create_add_window_contents(t, add_window_container, existing_item=false
                 "packing_qty": input_packing_qty.value,
                 "cost": input_cost.value,
                 "list_cost": input_list_cost.value,
+                "last_received_cost": last_received_cost.value,
                 "store_visible": input_checkbox.checked,
                 "store": current_store,
                 "recipe_book": current_recipebook,

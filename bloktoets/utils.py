@@ -37,6 +37,7 @@ def extenal_product_price_update(request):
             price = entry.get("price")
             list_cost = entry.get("list_cost")
             stock_on_hand = entry.get("stock_on_hand")
+            last_received_cost = entry.get("last_received_cost")
 
             if not code or price is None:
                 errors.append({"product_code": code, "error": "Missing data"})
@@ -48,7 +49,12 @@ def extenal_product_price_update(request):
                 products = Products.objects.filter(product_code=code, recipe_book__store=store.id)
                 for product in products:
                     # Update product values, if it is different
-                    if product.cost != price or product.name != name or product.list_cost != list_cost or product.stock_on_hand != stock_on_hand:
+                    if (product.cost != price or 
+                        product.name != name or 
+                        product.list_cost != list_cost or 
+                        product.stock_on_hand != stock_on_hand or
+                        product.last_received_cost != last_received_cost):
+
                         updated[code] = {
                             "department": product.recipe_book.name,
                             "old_cost": product.cost,
@@ -59,6 +65,7 @@ def extenal_product_price_update(request):
                         product.unit_price = price / product.packing_qty
                         product.list_cost = list_cost
                         product.stock_on_hand = stock_on_hand
+                        product.last_received_cost = last_received_cost
                         product.save()
                         #updated[code]["price_changes"].extend(update_pricing("product", product.id))
 

@@ -122,13 +122,9 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
         if (onclickfunction) {new_row.onclick = function() {onclickfunction(id)}}
         for (cell in data.data[row]) {
             // Skip certain names
-            if (cell != "id" && 
-                cell != "stock_on_hand" && 
-                cell != "used_in_recipes" && 
-                cell != "unit_of_measure" &&
-                cell != "volume" &&
-                cell != "supplier_product_code" &&
-                cell != "list_cost") {
+            const skipped_columns = ["id", "stock_on_hand", "used_in_recipes", "unit_of_measure",
+                                     "volume", "supplier_product_code", "list_cost", "last_received_cost"]
+            if (!skipped_columns.includes(cell)) {
                 const new_cell = new_row.insertCell();
                 // Render currency for certain columns:
                 if (cell == "cost" || cell == "unit_price" || cell == "cost_per_unit") {
