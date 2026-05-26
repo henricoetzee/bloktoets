@@ -143,7 +143,9 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
                 }else if (cell == "gross_profit"){
                     new_cell.innerHTML = data.data[row][cell].toFixed(1) + "%";
                 }else if (cell == "last_saved"){
-                    const date = new Date(data.data[row][cell]);
+                    const datestring = data.data[row][cell];
+                    if (!datestring.endsWith('Z')) datestring += 'Z';
+                    const date = new Date(datestring);
                     const formattedParts = formatter.formatToParts(date);
                     const parts = Object.fromEntries(formattedParts.map(p => [p.type, p.value]));
                     new_cell.innerHTML = `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
