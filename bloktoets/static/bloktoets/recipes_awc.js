@@ -411,6 +411,9 @@ function create_add_window_contents(t, add_window_container, existing_item=false
             volume_input.value = response.item.volume;
             supplier_product_code_input.value = response.item.supplier_product_code;
             update_cost_per_unit();
+            input_cost.disabled = true;
+            input_list_cost.disabled = true;
+            last_received_cost.disabled = true;
         }
 
         // Save button
