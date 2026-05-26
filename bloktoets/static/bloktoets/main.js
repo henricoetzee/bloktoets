@@ -18,6 +18,16 @@ var current_view = null;
 var breadcrumbs = [0,0];
 
 
+// Date formatter
+const formatter = new Intl.DateTimeFormat(navigator.language || 'en-US', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false
+});
+
 
 // --------------------------RENDER FUNCTIONS--------------------------------
 function render_stores(response, hist=true) {
@@ -132,6 +142,11 @@ function render_table(data, onclickfunction=false, clear_main=true, where="main_
                     new_cell.style.textAlign = "right";
                 }else if (cell == "gross_profit"){
                     new_cell.innerHTML = data.data[row][cell].toFixed(1) + "%";
+                }else if (cell == "last_saved"){
+                    const date = new Date(data.data[row][cell]);
+                    const formattedParts = formatter.formatToParts(date);
+                    const parts = Object.fromEntries(formattedParts.map(p => [p.type, p.value]));
+                    new_cell.innerHTML = `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
                 }else{
                     new_cell.innerHTML = data.data[row][cell];
                 }

@@ -44,7 +44,7 @@ def api(request):
                 recipes = Recipe.objects.filter(recipe_book__pk=request.GET['recipebook'])
                 return JsonResponse({
                     "status": "success",
-                    "headers": ["Recipe", "Scale code", "Sub dept","Cost per unit", "Gross profit", "Selling price"],
+                    "headers": ["Recipe", "Scale code", "Sub dept","Cost per unit", "Gross profit", "Selling price", "Last Saved"],
                     "data": [r.serialize() for r in recipes]
                 })
             except Exception as e:
