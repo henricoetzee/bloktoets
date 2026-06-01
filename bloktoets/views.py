@@ -500,7 +500,7 @@ def update_recipe_pricing(id = False, depth=0):
     changes[0]["new_cost"] = recipe.cost_per_unit
     changes[0]["selling"] = recipe.selling_price
     changes[0]["new_gp"] = recipe.gross_profit
-    recipe.save()
+    recipe.save(update_fields=['cost_per_unit', 'gross_profit'])
     # If the price changed, also change all the recipes with this as ingredient.
     if not (-0.3 < old_price - recipe.cost_per_unit < 0.3):
         new_recipes = Recipe_relation.objects.filter(ingredient=recipe)
