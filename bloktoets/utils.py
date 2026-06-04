@@ -62,7 +62,7 @@ def extenal_product_price_update(request):
                             "old_name": product.name
                             }
                         product.cost = price
-                        product.unit_price = price / product.packing_qty
+                        product.unit_price = price / product.volume
                         product.list_cost = list_cost
                         product.stock_on_hand = stock_on_hand
                         product.last_received_cost = last_received_cost
