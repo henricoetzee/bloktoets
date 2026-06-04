@@ -1,5 +1,8 @@
 settings.py
 
+# MY STUFF
+changes.csv
+
 # Django #
 *.log
 *.pot
