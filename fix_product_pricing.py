@@ -21,11 +21,11 @@ for product in products:
             price_tabs += '\t'
         recipebook = product.recipe_book.name + ' ' * (20-len(product.recipe_book.name)) if product.recipe_book is not None else "NONE" + " " * 15
         store = product.recipe_book.store.name if product.recipe_book is not None else product.store.name if product.store is not None else "NONE" + " " * 15
-        if len(product.name) > 23:
-            print(f'{store}\t{recipebook}\t{product.name[:10]}...{product.name[-10:]}\t{product.cost:,.2f}{volume_tabs}{product.volume:,.2f}\t\t{product.unit_price:,.2f}{price_tabs}{correct_price:,.2f}')
+        if len(product.name) > 31:
+            print(f'{store}\t{recipebook}\t{product.name[:14]}...{product.name[-14:]}\t{product.cost:,.2f}{volume_tabs}{product.volume:,.2f}\t\t{product.unit_price:,.2f}{price_tabs}{correct_price:,.2f}')
         else:
-            space = ' ' * (20 - len(product.name))
+            space = ' ' * (31 - len(product.name))
             print(f'{store}\t{recipebook}\t{product.name}{space}\t{product.cost:,.2f}{volume_tabs}{product.volume:,.2f}\t\t{product.unit_price:,.2f}{price_tabs}{correct_price:,.2f}')
-    #if count > 100:
+    #if count > 10:
     #    break
     
