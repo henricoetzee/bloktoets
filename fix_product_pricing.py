@@ -12,7 +12,7 @@ count = 0
 for product in products:
     count += 1
     correct_price = product.cost / product.volume
-    if (-0.3 < correct_price - product.unit_price < 0.3):
+    if not (-0.3 < correct_price - product.unit_price < 0.3):
         volume_tabs = '\t'
         if product.cost < 1000.0:
             volume_tabs += '\t'
